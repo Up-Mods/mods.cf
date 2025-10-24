@@ -31,7 +31,7 @@ impl IntoResponse for HealthResponse {
     }
 }
 
-#[extension(pub trait BetterJsonError)]
+#[extension(pub(crate) trait BetterJsonError)]
 impl reqwest::Response {
     async fn json_with_error<T>(self) -> anyhow::Result<T>
     where
