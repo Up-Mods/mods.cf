@@ -10,7 +10,7 @@ const PORT: u16 = 3000;
 async fn main() -> anyhow::Result<()> {
     env_logger::init();
 
-    let app = web::init_router().await?;
+    let app = web::init_router(true).await?;
     let listener = TcpListener::bind(SocketAddr::new(IpAddr::from(Ipv6Addr::UNSPECIFIED), PORT))
         .await
         .with_context(|| format!("Unable to create listener on port {PORT}"))?;

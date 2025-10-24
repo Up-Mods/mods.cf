@@ -25,7 +25,11 @@ impl Analytics {
     }
 }
 
-pub(crate) async fn init() -> anyhow::Result<Analytics> {
+pub(crate) async fn init(enable: bool) -> anyhow::Result<Analytics> {
+    if !enable {
+        return Ok(Analytics::default());
+    }
+    
     let Some(posthog_url) = env::var("POSTHOG_INSTANCE_URL").ok() else {
         return Ok(Analytics::default());
     };

@@ -16,9 +16,9 @@ pub(crate) struct AppState {
     pub curseforge: CurseforgeState,
 }
 
-pub async fn init_router() -> anyhow::Result<Router> {
+pub async fn init_router(enable_analytics: bool) -> anyhow::Result<Router> {
     let app_data = Arc::new(AppState {
-        analytics: analytics::init().await?,
+        analytics: analytics::init(enable_analytics).await?,
         curseforge: curseforge::init()?,
     });
     let router = Router::new()
