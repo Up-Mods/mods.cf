@@ -14,7 +14,7 @@ async fn main() -> anyhow::Result<()> {
     let eternal_api_token = env::var("CURSEFORGE_ETERNAL_API_TOKEN")
         .expect("Please specify CURSEFORGE_ETERNAL_API_TOKEN for Curseforge Eternal API!");
 
-    let app = web::init_router(eternal_api_token.as_str())?;
+    let app = web::init_router(eternal_api_token.as_str()).await?;
     let listener = TcpListener::bind(SocketAddr::new(IpAddr::from(Ipv6Addr::UNSPECIFIED), PORT))
         .await
         .with_context(|| format!("Unable to create listener on port {PORT}"))?;

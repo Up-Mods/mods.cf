@@ -3,6 +3,7 @@ use axum::Json;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use bytes::Bytes;
+use posthog_rs::Event;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 
@@ -47,5 +48,16 @@ impl reqwest::Response {
             .with_context(|| format!("Unable to decode response for {url}"))?;
 
         Ok(json)
+    }
+}
+
+#[extension(pub(crate) trait CaptureEventProperties)]
+impl Event {
+    fn with<K: Into<String>, V: Serialize>(mut self, key: K, value: V) -> Self {
+        if let Err(err) = self.insert_prop(key, value) {
+            log::error!("Unable to set event error context: {err:#}");
+        }
+
+        self
     }
 }

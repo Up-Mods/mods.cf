@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate extension_traits;
 
+mod analytics;
 mod curseforge;
 mod util;
 pub mod web;
