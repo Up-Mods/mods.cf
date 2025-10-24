@@ -257,7 +257,7 @@ pub struct FileIndex {
     #[serde(rename = "gameVersionTypeId")]
     pub game_version_type_id: Option<u64>,
     #[serde(rename = "modLoader")]
-    pub mod_loader: u8, //ModLoaderType
+    pub mod_loader: Option<ModLoaderType>,
 }
 
 #[derive(Serialize, Deserialize_repr)]
