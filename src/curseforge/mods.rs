@@ -1,4 +1,5 @@
 use crate::curseforge::API_BASE_URL;
+use crate::util::BetterJsonError;
 use anyhow::{Context, bail};
 use chrono::{DateTime, Utc};
 use reqwest::header::{CONTENT_TYPE, HeaderValue};
@@ -305,10 +306,7 @@ pub async fn get_mod(client: &Client, project_id: u64) -> anyhow::Result<Option<
         }
     }
 
-    let get_mod_response: GetModResponse = response
-        .json()
-        .await
-        .with_context(|| format!("Unable to decode response for {url}"))?;
+    let get_mod_response: GetModResponse = response.json_with_error().await?;
     Ok(Some(get_mod_response.data))
 }
 
@@ -333,10 +331,7 @@ pub async fn get_files(client: &Client, file_ids: Vec<u64>) -> anyhow::Result<Ha
         }
     }
 
-    let get_files_response: GetFilesResponse = response
-        .json()
-        .await
-        .with_context(|| format!("Unable to decode response for {url}"))?;
+    let get_files_response: GetFilesResponse = response.json_with_error().await?;
     Ok(get_files_response
         .data
         .iter()

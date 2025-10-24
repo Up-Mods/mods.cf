@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate extension_traits;
+
 mod curseforge;
 mod util;
 pub mod web;

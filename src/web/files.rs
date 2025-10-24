@@ -22,7 +22,7 @@ pub(crate) async fn file_by_id(
             Redirect::to(url.as_str()).into_response()
         }
         Err(err) => {
-            log::error!("Error during file lookup for file {file_id}: {err}");
+            log::error!("Error during file lookup for file {file_id}: {err:#}");
             StatusCode::INTERNAL_SERVER_ERROR.into_response()
         }
     }
