@@ -1,4 +1,4 @@
-use crate::util::CaptureEventProperties;
+use crate::util::{CaptureEventProperties, StatusExt};
 use crate::web::AppState;
 use anyhow::{Context, anyhow};
 use axum::extract::{Request, State};
@@ -74,7 +74,7 @@ pub(crate) async fn capture_analytics(
             .with("$host", url.host())
             .with("$pathname", url.path())
             .with("status", response.status().as_u16())
-            .with("success", response.status().is_success())
+            .with("success", response.status().is_success_or_redirect())
             .with("user_agent", user_agent);
 
         if let Err(err) = state.analytics.capture(event).await {

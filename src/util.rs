@@ -51,6 +51,13 @@ impl reqwest::Response {
     }
 }
 
+#[extension(pub(crate) trait StatusExt)]
+impl StatusCode {
+    fn is_success_or_redirect(&self) -> bool {
+        self.is_success() || self.is_redirection()
+    }
+}
+
 #[extension(pub(crate) trait CaptureEventProperties)]
 impl Event {
     fn with<K: Into<String>, V: Serialize>(mut self, key: K, value: V) -> Self {
