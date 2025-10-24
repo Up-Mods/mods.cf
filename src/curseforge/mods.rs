@@ -100,6 +100,8 @@ pub struct ModAuthor {
     pub id: u64,
     pub name: String,
     pub url: String,
+    #[serde(rename = "avatarUrl")]
+    pub avatar_url: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
