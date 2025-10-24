@@ -40,3 +40,20 @@ pub async fn init_router(enable_analytics: bool) -> anyhow::Result<Router> {
 
     Ok(router)
 }
+
+#[cfg(test)]
+pub mod test {
+    use crate::web::init_router;
+    use anyhow::{Context, anyhow};
+    use axum_test::TestServer;
+
+    pub(crate) async fn new_test_server() -> anyhow::Result<TestServer> {
+        let app = init_router(false)
+            .await
+            .context("Unable to create test server")?;
+        TestServer::builder()
+            .mock_transport()
+            .build(app)
+            .map_err(|err| anyhow!(err))
+    }
+}

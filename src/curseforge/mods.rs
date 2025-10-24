@@ -354,3 +354,35 @@ pub async fn get_file_info(client: &Client, file_id: u64) -> anyhow::Result<Opti
         len => bail!("Expected 1 result file, got {len}"),
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::curseforge::mods::get_mod;
+    use crate::{async_tests_with_env, curseforge};
+
+    async_tests_with_env! {
+        async fn should_not_throw() -> anyhow::Result<()> {
+            let state = curseforge::init()?;
+
+            let result = get_mod(&state.eternal_api_client, 257814).await;
+            assert!(result.is_ok(), "Unable to resolve project");
+            Ok(())
+        }
+
+        async fn project_exists() -> anyhow::Result<()> {
+            let state = curseforge::init()?;
+
+            let result = get_mod(&state.eternal_api_client, 911456).await;
+            assert!(result.is_ok_and(|p| p.is_some()), "Project not found");
+            Ok(())
+        }
+
+        async fn validate_project_url() -> anyhow::Result<()> {
+            let state = curseforge::init()?;
+
+            let result = get_mod(&state.eternal_api_client, 911456).await?;
+            assert!(result.is_some_and(|p| p.links.website_url.starts_with("https://www.curseforge.com/minecraft/mc-mods/")));
+            Ok(())
+        }
+    }
+}
