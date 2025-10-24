@@ -41,6 +41,9 @@ pub(crate) async fn init() -> anyhow::Result<Analytics> {
         .api_key(posthog_project_api_key)
         .build()?;
     let client = posthog_rs::client(options).await;
+
+    log::info!("PostHog analytics enabled");
+
     Ok(Analytics {
         client: Some(client),
     })
