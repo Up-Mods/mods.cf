@@ -69,8 +69,10 @@ pub(crate) async fn capture_analytics(
     let response = next.run(req).await;
 
     if !IGNORED_PATHS.contains(&url.path()) {
-        let event = Event::new_anon("request_handled")
-            .with("url", url.to_string())
+        let event = Event::new_anon("$pageview")
+            .with("$current_url", url.to_string())
+            .with("$host", url.host())
+            .with("$pathname", url.path())
             .with("status", response.status().as_u16())
             .with("success", response.status().is_success())
             .with("user_agent", user_agent);
