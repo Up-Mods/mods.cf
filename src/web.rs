@@ -16,10 +16,10 @@ pub(crate) struct AppState {
     pub curseforge: CurseforgeState,
 }
 
-pub async fn init_router(eternal_api_token: &str) -> anyhow::Result<Router> {
+pub async fn init_router() -> anyhow::Result<Router> {
     let app_data = Arc::new(AppState {
         analytics: analytics::init().await?,
-        curseforge: curseforge::create_state(eternal_api_token)?,
+        curseforge: curseforge::init()?,
     });
     let router = Router::new()
         .route(

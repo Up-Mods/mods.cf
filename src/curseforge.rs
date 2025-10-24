@@ -1,5 +1,6 @@
 use reqwest::Client;
 use reqwest::header::{ACCEPT, HeaderMap, HeaderName, HeaderValue};
+use std::env;
 
 pub(crate) mod mods;
 
@@ -9,11 +10,14 @@ pub(crate) struct CurseforgeState {
     pub eternal_api_client: Client,
 }
 
-pub(crate) fn create_state(eternal_api_token: &str) -> anyhow::Result<CurseforgeState> {
+pub(crate) fn init() -> anyhow::Result<CurseforgeState> {
+    let eternal_api_token = env::var("CURSEFORGE_ETERNAL_API_TOKEN")
+        .expect("Please specify CURSEFORGE_ETERNAL_API_TOKEN for Curseforge Eternal API!");
+
     let mut default_headers = HeaderMap::with_capacity(4);
     default_headers.append(
         HeaderName::from_static("x-api-key"),
-        HeaderValue::from_str(eternal_api_token)?,
+        HeaderValue::from_str(&eternal_api_token)?,
     );
     default_headers.append(ACCEPT, HeaderValue::from_static("application/json"));
     let client = Client::builder()
