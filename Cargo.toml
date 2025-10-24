@@ -5,6 +5,7 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.100"
 axum = "0.8.6"
+axum-test = "18.1.0"
 bytes = { version = "1.10.1"}
 chrono = { version = "0.4.42", features = ["serde"] }
 dotenvy = { git = "https://github.com/allan2/dotenvy", features = ["macros"] }
