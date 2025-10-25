@@ -82,7 +82,7 @@ pub(crate) async fn capture_analytics(
     let mut url_hostname = hostname.as_deref();
     if url_hostname.is_none_or(|hostname| regex!(r"^(?:localhost|127\.0\.0\.1)").is_match(hostname))
     {
-        url_hostname = url_hostname.or(state.http.frontend_url.as_deref())
+        url_hostname = state.http.frontend_url.as_deref().or(url_hostname)
     }
 
     let full_url = format!(
