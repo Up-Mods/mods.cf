@@ -7,7 +7,7 @@ ARG ALPINE_VERSION
 ################################################################################
 # Create a stage for building the application.
 
-FROM --platform=$BUILDPLATFORM rust:${RUST_VERSION}-alpine${ALPINE_VERSION} AS build
+FROM rust:${RUST_VERSION}-alpine${ALPINE_VERSION} AS build
 WORKDIR /app
 
 # Install host build dependencies.
@@ -37,7 +37,7 @@ cp ./target/release/server /bin/server
 ################################################################################
 # Create a new stage for running the application that contains the minimal
 # runtime dependencies for the application.
-FROM --platform=$BUILDPLATFORM alpine:${ALPINE_VERSION:-latest} AS deploy
+FROM alpine:${ALPINE_VERSION:-latest} AS deploy
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
