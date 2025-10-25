@@ -1,5 +1,5 @@
 use crate::util::{CaptureEventProperties, StatusExt};
-use crate::web::AppState;
+use crate::web::{AppState, get_host};
 use anyhow::{Context, anyhow};
 use axum::extract::{Request, State};
 use axum::http::StatusCode;
@@ -60,19 +60,28 @@ pub(crate) async fn capture_analytics(
 ) -> Result<Response, StatusCode> {
     const IGNORED_PATHS: [&str; 1] = ["/health"];
 
-    let url = req.uri().clone();
+    // headers
     let user_agent = req
         .headers()
         .get(USER_AGENT)
         .and_then(|h| h.to_str().ok())
         .map(ToString::to_string);
+    let host = get_host(&req, &state.http);
+
+    // URL path
+    let path = req.uri().clone();
+
     let response = next.run(req).await;
 
-    if !IGNORED_PATHS.contains(&url.path()) {
+    // construct full URL by joining the path to the host
+    // if no host exists we just return the path as is, to still capture that.
+    let full_url = format!("{host}{path}", host = host.as_deref().unwrap_or(""));
+
+    if !IGNORED_PATHS.contains(&path.path()) {
         let event = Event::new_anon("$pageview")
-            .with("$current_url", url.to_string())
-            .with("$host", url.host())
-            .with("$pathname", url.path())
+            .with("$current_url", full_url)
+            .with("$host", host)
+            .with("$pathname", path.path())
             .with("status", response.status().as_u16())
             .with("success", response.status().is_success_or_redirect())
             .with("user_agent", user_agent);
