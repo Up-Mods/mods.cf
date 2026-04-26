@@ -2,12 +2,14 @@ use crate::analytics::Analytics;
 use crate::curseforge::CurseforgeState;
 use crate::util::HealthResponse;
 use crate::{analytics, curseforge};
+use anyhow::Context;
 use axum::http::StatusCode;
 use axum::response::Redirect;
 use axum::routing::get;
 use axum::{Router, middleware};
 use std::env;
 use std::sync::Arc;
+use url::Url;
 
 mod files;
 pub mod projects;
@@ -19,7 +21,7 @@ pub(crate) struct AppState {
 }
 
 pub(crate) struct HttpConfig {
-    pub frontend_url: Option<String>,
+    pub frontend_url: Url,
 }
 
 pub async fn init_router(enable_analytics: bool) -> anyhow::Result<Router> {
@@ -49,7 +51,10 @@ pub async fn init_router(enable_analytics: bool) -> anyhow::Result<Router> {
 }
 
 fn init_http() -> anyhow::Result<HttpConfig> {
-    let frontend_url = env::var("FRONTEND_URL").ok();
+    let frontend_url = match env::var("FRONTEND_URL").ok() {
+        Some(url) => Url::parse(&url).context("FRONTEND_URL not set to a valid URL")?,
+        None => Url::parse("http://localhost").expect("unable to parse localhost URL"),
+    };
 
     Ok(HttpConfig { frontend_url })
 }
