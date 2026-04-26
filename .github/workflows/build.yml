@@ -10,7 +10,7 @@ on:
     tags: [ "*" ]
 
 env:
-  RUST_VERSION: 1.90.0
+  RUST_VERSION: 1.93.1
   ALPINE_VERSION: 3.22
   PLATFORMS: linux/amd64,linux/arm64/v8
   REGISTRY: ghcr.io
