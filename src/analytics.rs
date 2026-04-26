@@ -37,13 +37,15 @@ pub(crate) async fn init(enable: bool) -> anyhow::Result<Analytics> {
     let posthog_project_api_key = env::var("POSTHOG_PROJECT_API_KEY")
         .context("PostHog analytics are enabled but no POSTHOG_PROJECT_API_KEY was provided!")?;
 
-    // TODO posthog sdk does not support using private api key or error tracking yet :/
-    // let posthog_personal_api_key = env::var("POSTHOG_PERSONAL_API_KEY").ok();
+    // TODO posthog sdk does not support error tracking yet :/
+    let posthog_personal_api_key = env::var("POSTHOG_PERSONAL_API_KEY").ok();
 
     let options = ClientOptionsBuilder::default()
-        .api_endpoint(posthog_url)
+        .host(posthog_url)
         .api_key(posthog_project_api_key)
+        .personal_api_key(posthog_personal_api_key.unwrap_or_default())
         .build()?;
+
     let client = posthog_rs::client(options).await;
 
     log::info!("PostHog analytics enabled");
