@@ -1,6 +1,6 @@
 use crate::util::{CaptureEventProperties, StatusExt};
 use crate::web::AppState;
-use anyhow::{Context, anyhow};
+use anyhow::Context;
 use axum::extract::{Request, State};
 use axum::http::StatusCode;
 use axum::http::header::USER_AGENT;
@@ -16,12 +16,10 @@ pub(crate) struct Analytics {
 }
 
 impl Analytics {
-    pub async fn capture(&self, event: Event) -> anyhow::Result<()> {
+    pub fn capture(&self, event: Event) {
         if let Some(client) = &self.client {
-            client.capture(event).await.map_err(|err| anyhow!(err))?;
+            client.capture(event);
         }
-
-        Ok(())
     }
 }
 
@@ -38,12 +36,13 @@ pub(crate) async fn init(enable: bool) -> anyhow::Result<Analytics> {
         .context("PostHog analytics are enabled but no POSTHOG_PROJECT_API_KEY was provided!")?;
 
     // TODO posthog sdk does not support error tracking yet :/
+    // TODO rename secret key
     let posthog_personal_api_key = env::var("POSTHOG_PERSONAL_API_KEY").ok();
 
     let options = ClientOptionsBuilder::default()
         .host(posthog_url)
         .api_key(posthog_project_api_key)
-        .personal_api_key(posthog_personal_api_key.unwrap_or_default())
+        .secret_key(posthog_personal_api_key.unwrap_or_default())
         .build()?;
 
     let client = posthog_rs::client(options).await;
@@ -97,9 +96,7 @@ pub(crate) async fn capture_analytics(
             .with("success", response.status().is_success_or_redirect())
             .with("user_agent", user_agent);
 
-        if let Err(err) = state.analytics.capture(event).await {
-            log::error!("Unable to capture event: {err:?}")
-        }
+        state.analytics.capture(event);
     }
 
     Ok(response)
