@@ -14,12 +14,14 @@ pub(crate) async fn init(enable: bool) -> anyhow::Result<Client> {
     let mut builder = ClientOptionsBuilder::default();
 
     if enable && let Some(posthog_url) = env::var("POSTHOG_INSTANCE_URL").ok() {
-        let posthog_project_api_key = env::var("POSTHOG_PROJECT_API_KEY")
-            .context("PostHog analytics are enabled but no POSTHOG_PROJECT_API_KEY was provided!")?;
+        let posthog_project_api_key = env::var("POSTHOG_PROJECT_API_KEY").context(
+            "PostHog analytics are enabled but no POSTHOG_PROJECT_API_KEY was provided!",
+        )?;
 
         let posthog_personal_api_key = env::var("POSTHOG_PERSONAL_API_KEY").ok();
 
-        builder.host(posthog_url)
+        builder
+            .host(posthog_url)
             .api_key(posthog_project_api_key)
             .secret_key(posthog_personal_api_key.unwrap_or_default());
 

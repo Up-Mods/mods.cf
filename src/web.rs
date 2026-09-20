@@ -23,7 +23,9 @@ pub(crate) struct HttpConfig {
     pub frontend_url: Url,
 }
 
-pub async fn init_router(enable_analytics: bool) -> anyhow::Result<(Router, impl AsyncFnOnce() -> anyhow::Result<()>)> {
+pub async fn init_router(
+    enable_analytics: bool,
+) -> anyhow::Result<(Router, impl AsyncFnOnce() -> anyhow::Result<()>)> {
     let posthog_client = analytics::init(enable_analytics).await?;
     let app_data = Arc::new(AppState {
         http: init_http()?,
@@ -72,7 +74,8 @@ pub mod test {
     use anyhow::Context;
     use axum_test::TestServer;
 
-    pub(crate) async fn new_test_server() -> anyhow::Result<(TestServer, impl AsyncFnOnce() -> anyhow::Result<()>)> {
+    pub(crate) async fn new_test_server()
+    -> anyhow::Result<(TestServer, impl AsyncFnOnce() -> anyhow::Result<()>)> {
         let (app, shutdown) = init_router(false)
             .await
             .context("Unable to create test server")?;
