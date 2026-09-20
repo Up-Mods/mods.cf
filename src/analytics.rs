@@ -10,48 +10,24 @@ use posthog_rs::{Client, ClientOptionsBuilder, Event};
 use std::env;
 use std::sync::Arc;
 
-#[derive(Default)]
-pub(crate) struct Analytics {
-    client: Option<Client>,
-}
+pub(crate) async fn init(enable: bool) -> anyhow::Result<Client> {
+    let mut builder = ClientOptionsBuilder::default();
 
-impl Analytics {
-    pub fn capture(&self, event: Event) {
-        if let Some(client) = &self.client {
-            client.capture(event);
-        }
-    }
-}
+    if enable && let Some(posthog_url) = env::var("POSTHOG_INSTANCE_URL").ok() {
+        let posthog_project_api_key = env::var("POSTHOG_PROJECT_API_KEY")
+            .context("PostHog analytics are enabled but no POSTHOG_PROJECT_API_KEY was provided!")?;
 
-pub(crate) async fn init(enable: bool) -> anyhow::Result<Analytics> {
-    if !enable {
-        return Ok(Analytics::default());
+        let posthog_personal_api_key = env::var("POSTHOG_PERSONAL_API_KEY").ok();
+
+        builder.host(posthog_url)
+            .api_key(posthog_project_api_key)
+            .secret_key(posthog_personal_api_key.unwrap_or_default());
+
+        log::info!("PostHog analytics enabled");
     }
 
-    let Some(posthog_url) = env::var("POSTHOG_INSTANCE_URL").ok() else {
-        return Ok(Analytics::default());
-    };
-
-    let posthog_project_api_key = env::var("POSTHOG_PROJECT_API_KEY")
-        .context("PostHog analytics are enabled but no POSTHOG_PROJECT_API_KEY was provided!")?;
-
-    // TODO posthog sdk does not support error tracking yet :/
-    // TODO rename secret key
-    let posthog_personal_api_key = env::var("POSTHOG_PERSONAL_API_KEY").ok();
-
-    let options = ClientOptionsBuilder::default()
-        .host(posthog_url)
-        .api_key(posthog_project_api_key)
-        .secret_key(posthog_personal_api_key.unwrap_or_default())
-        .build()?;
-
-    let client = posthog_rs::client(options).await;
-
-    log::info!("PostHog analytics enabled");
-
-    Ok(Analytics {
-        client: Some(client),
-    })
+    let client = posthog_rs::client(builder.build()?).await;
+    Ok(client)
 }
 
 pub(crate) async fn capture_analytics(
@@ -96,7 +72,7 @@ pub(crate) async fn capture_analytics(
             .with("success", response.status().is_success_or_redirect())
             .with("user_agent", user_agent);
 
-        state.analytics.capture(event);
+        state.posthog_client.capture(event);
     }
 
     Ok(response)

@@ -15,12 +15,13 @@ mod test {
 
     async_tests_with_env! {
         async fn should_redirect_to_project() -> anyhow::Result<()> {
-            let server = new_test_server().await?;
+            let (server, shutdown) = new_test_server().await?;
 
             let response = server.get("/911456").await;
             response.assert_status(StatusCode::SEE_OTHER);
             response.assert_header(LOCATION, "https://curseforge.com/projects/911456");
-            Ok(())
+            
+            shutdown().await
         }
     }
 }

@@ -37,7 +37,7 @@ mod test {
 
     async_tests_with_env! {
         async fn should_redirect_to_project_files() -> anyhow::Result<()> {
-            let server = new_test_server().await?;
+            let (server, shutdown) = new_test_server().await?;
 
             let response = server.get("/f/6774233").await;
             response.assert_status(StatusCode::SEE_OTHER);
@@ -45,8 +45,8 @@ mod test {
                 LOCATION,
                 "https://www.curseforge.com/minecraft/mc-mods/sparkweave/files/6774233",
             );
-
-            Ok(())
+            
+            shutdown().await
         }
     }
 }

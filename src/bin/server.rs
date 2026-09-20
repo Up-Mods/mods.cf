@@ -11,7 +11,7 @@ const PORT: u16 = 3000;
 async fn main() -> anyhow::Result<()> {
     env_logger::init();
 
-    let app = web::init_router(true).await?;
+    let (app, shutdown) = web::init_router(true).await?;
     let listener = TcpListener::bind(SocketAddr::new(IpAddr::from(Ipv6Addr::UNSPECIFIED), PORT))
         .await
         .with_context(|| format!("Unable to create listener on port {PORT}"))?;
@@ -21,9 +21,7 @@ async fn main() -> anyhow::Result<()> {
         .with_graceful_shutdown(wait_for_shutdown_signal())
         .await?;
 
-    // TODO handle shutdown
-
-    Ok(())
+    shutdown().await
 }
 
 async fn wait_for_shutdown_signal() {

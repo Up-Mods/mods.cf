@@ -1,4 +1,3 @@
-use crate::analytics::Analytics;
 use crate::curseforge::CurseforgeState;
 use crate::util::HealthResponse;
 use crate::{analytics, curseforge};
@@ -16,7 +15,7 @@ pub mod projects;
 
 pub(crate) struct AppState {
     pub http: HttpConfig,
-    pub analytics: Analytics,
+    pub posthog_client: posthog_rs::Client,
     pub curseforge: CurseforgeState,
 }
 
@@ -24,12 +23,20 @@ pub(crate) struct HttpConfig {
     pub frontend_url: Url,
 }
 
-pub async fn init_router(enable_analytics: bool) -> anyhow::Result<Router> {
+pub async fn init_router(enable_analytics: bool) -> anyhow::Result<(Router, impl AsyncFnOnce() -> anyhow::Result<()>)> {
+    let posthog_client = analytics::init(enable_analytics).await?;
     let app_data = Arc::new(AppState {
         http: init_http()?,
-        analytics: analytics::init(enable_analytics).await?,
+        posthog_client,
         curseforge: curseforge::init()?,
     });
+    let copied_state = app_data.clone();
+    let shutdown = async move || {
+        copied_state.posthog_client.shutdown().await;
+
+        anyhow::Ok(())
+    };
+
     let router = Router::new()
         .route(
             "/",
@@ -47,7 +54,7 @@ pub async fn init_router(enable_analytics: bool) -> anyhow::Result<Router> {
         ))
         .with_state(app_data);
 
-    Ok(router)
+    Ok((router, shutdown))
 }
 
 fn init_http() -> anyhow::Result<HttpConfig> {
@@ -65,10 +72,12 @@ pub mod test {
     use anyhow::Context;
     use axum_test::TestServer;
 
-    pub(crate) async fn new_test_server() -> anyhow::Result<TestServer> {
-        let app = init_router(false)
+    pub(crate) async fn new_test_server() -> anyhow::Result<(TestServer, impl AsyncFnOnce() -> anyhow::Result<()>)> {
+        let (app, shutdown) = init_router(false)
             .await
             .context("Unable to create test server")?;
-        Ok(TestServer::builder().mock_transport().build(app))
+
+        let server = TestServer::builder().mock_transport().build(app);
+        Ok((server, shutdown))
     }
 }
