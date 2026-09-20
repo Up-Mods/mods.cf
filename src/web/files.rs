@@ -19,7 +19,7 @@ pub(crate) async fn file_by_id(
                 "{project_url}/files/{file_id}",
                 project_url = project.links.website_url
             );
-            Redirect::to(url.as_str()).into_response()
+            Redirect::to(&url).into_response()
         }
         Err(err) => {
             log::error!("Error during file lookup for file {file_id}: {err:#}");
@@ -45,7 +45,7 @@ mod test {
                 LOCATION,
                 "https://www.curseforge.com/minecraft/mc-mods/sparkweave/files/6774233",
             );
-            
+
             shutdown().await
         }
     }
