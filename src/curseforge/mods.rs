@@ -6,13 +6,15 @@ use reqwest::header::{CONTENT_TYPE, HeaderValue};
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_repr::Deserialize_repr;
-use serde_with::{NoneAsEmptyString, serde_as};
+use serde_with::{serde_as, skip_serializing_none, NoneAsEmptyString};
 use std::collections::HashMap;
 
 use crate::curseforge::mods::SocialLinkType::Unknown;
 use serde_map_to_array::{HashMapToArray, KeyValueLabels};
 
+#[serde_as]
 #[derive(Serialize, Deserialize)]
+#[skip_serializing_none]
 pub struct Mod {
     pub id: u64,
     #[serde(rename = "gameId")]
@@ -69,8 +71,8 @@ pub struct Mod {
     pub thumbs_up_count: Option<u64>,
     pub rating: Option<f64>,
     // TODO featuredProjectTag
-    #[serde(rename = "socialLinks", with = "HashMapToArray::<SocialLinkType, String, SocialLinkTypeKeyValueLabels>")]
-    pub social_links: HashMap<SocialLinkType, String>
+    #[serde(rename = "socialLinks")]
+    pub social_links: Option<SocialLinks>
 }
 
 #[serde_as]
@@ -96,7 +98,18 @@ impl KeyValueLabels for SocialLinkTypeKeyValueLabels {
     const VALUE: &'static str = "url";
 }
 
-#[derive(Serialize, Deserialize, Hash, Eq, PartialEq)]
+// FIXME find a better way to serialize than this jank
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(transparent)]
+pub struct SocialLinks(#[serde(with = "HashMapToArray::<SocialLinkType, String, SocialLinkTypeKeyValueLabels>")] pub HashMap<SocialLinkType, String>);
+
+impl From<SocialLinks> for HashMap<SocialLinkType, String> {
+    fn from(value: SocialLinks) -> Self {
+        value.0
+    }
+}
+
+#[derive(Serialize, Deserialize, Hash, Eq, PartialEq, Copy, Clone)]
 #[serde(from = "u8")]
 pub enum SocialLinkType {
     #[serde(rename = "mastodon")]

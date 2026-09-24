@@ -79,7 +79,7 @@ pub(crate) async fn project_embed_by_id(
                 buttons = buttons.component(wiki_button);
             }
 
-            if let Some(discord_url) = project.social_links.get(&SocialLinkType::Discord) {
+            if let Some(discord_url) = project.social_links.map(|map| map.0.get(&SocialLinkType::Discord).cloned()).flatten() {
                 let discord_button = ButtonBuilder::new(ButtonStyle::Link)
                     .label("Discord")
                     .emoji(EmojiReactionType::Custom {
