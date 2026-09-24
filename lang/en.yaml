@@ -1,0 +1,8 @@
+---
+embed:
+  discord:
+    project: |
+      # %{title} - CurseForge
+      -# *%{downloads} downloads*
+      
+      %{summary}

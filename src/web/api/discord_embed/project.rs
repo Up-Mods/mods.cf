@@ -2,13 +2,14 @@ use crate::curseforge;
 use crate::discord::ComponentHolder;
 use crate::web::AppState;
 use crate::web::api::ApiError;
+use crate::web::api::discord_embed::EmbedParams;
 use axum::Json;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use human_repr::HumanCount;
 use std::sync::Arc;
-use twilight_model::channel::message::component::{ButtonStyle, UnfurledMediaItem};
 use twilight_model::channel::message::EmojiReactionType;
+use twilight_model::channel::message::component::{ButtonStyle, UnfurledMediaItem};
 use twilight_model::id::Id;
 use twilight_util::builder::message::{
     ActionRowBuilder, ButtonBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder,
@@ -18,6 +19,7 @@ use twilight_util::builder::message::{
 pub(crate) async fn project_embed_by_id(
     State(state): State<Arc<AppState>>,
     Path(project_id): Path<u64>,
+    Query(params): Query<EmbedParams>,
 ) -> impl IntoResponse {
     match curseforge::mods::get_mod(&state.curseforge.eternal_api_client, project_id).await {
         Ok(result) => {
@@ -25,16 +27,12 @@ pub(crate) async fn project_embed_by_id(
                 return ApiError::not_found(None).into_response();
             };
 
-            // TODO move this to translations file
-            let title_text = format!(
-                r#"# {title} - CurseForge
--# *{downloads} downloads*
-
-{summary}
-"#,
+            let title_text = t!(
+                "embed.discord.project",
+                locale = &params.content_language.unwrap_or_default(),
                 title = project.name,
-                downloads = project.download_count.human_count_bare(),
-                summary = project.summary
+                summary = project.summary,
+                downloads = project.download_count.human_count_bare()
             );
 
             let thumbnail = ThumbnailBuilder::new(UnfurledMediaItem {
@@ -64,7 +62,7 @@ pub(crate) async fn project_embed_by_id(
                 .emoji(EmojiReactionType::Custom {
                     name: Some("curseforge".to_string()),
                     animated: false,
-                    id: Id::new(1552609523561271396)
+                    id: Id::new(1552609523561271396),
                 })
                 .url(project_url)
                 .build();

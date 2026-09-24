@@ -1,7 +1,7 @@
 use crate::web::{AppState, UserAgent};
 use crate::{curseforge, feature_flags};
 use axum::Extension;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Request, State};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Redirect};
 use posthog_rs::{CaptureExceptionOptions, EvaluateFlagsOptions, Event, FlagValue};
@@ -17,6 +17,7 @@ pub(crate) async fn project_by_id(
     Extension(user_agent): Extension<Option<UserAgent>>,
     Extension(mut event): Extension<Event>,
     Path(project_id): Path<u64>,
+    req: Request,
 ) -> impl IntoResponse {
     match curseforge::mods::get_mod(&state.curseforge.eternal_api_client, project_id).await {
         Ok(result) => {
@@ -66,29 +67,36 @@ pub(crate) async fn project_by_id(
                                 project_name = project.name
                             );
 
-                            let component_json_url = match state.http.frontend_url.join(&format!(
+                            let mut url_partial = format!(
                                 "api/discord-embed/project/{project_id}?t={time}",
                                 time = SystemTime::now()
                                     .duration_since(SystemTime::UNIX_EPOCH)
                                     .unwrap_or_default()
                                     .as_secs()
-                            )) {
-                                Ok(value) => value,
+                            );
 
-                                Err(err) => {
-                                    state
-                                        .posthog_client
-                                        .capture_exception_with(
-                                            &err,
-                                            CaptureExceptionOptions::new()
-                                                .distinct_id(event.distinct_id()),
-                                        )
-                                        .await
-                                        .ok();
-                                    return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-                                }
-                            };
+                            if let Some(query) = req.uri().query() {
+                                url_partial.push('&');
+                                url_partial.push_str(query);
+                            }
 
+                            let component_json_url =
+                                match state.http.frontend_url.join(&url_partial) {
+                                    Ok(value) => value,
+
+                                    Err(err) => {
+                                        state
+                                            .posthog_client
+                                            .capture_exception_with(
+                                                &err,
+                                                CaptureExceptionOptions::new()
+                                                    .distinct_id(event.distinct_id()),
+                                            )
+                                            .await
+                                            .ok();
+                                        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+                                    }
+                                };
 
                             return Html(
                                 PROJECTS_PREVIEW_HTML
