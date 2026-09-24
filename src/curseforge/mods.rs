@@ -76,7 +76,7 @@ pub struct ModLinks {
     pub wiki_url: Option<String>,
     #[serde(rename = "issuesUrl")]
     pub issues_url: Option<String>,
-    #[serde(rename = "sourcesUrl")]
+    #[serde(rename = "sourceUrl")]
     pub sources_url: Option<String>,
 }
 
