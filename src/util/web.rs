@@ -1,9 +1,9 @@
 use crate::web::UserAgent;
 use anyhow::Context;
 use axum::http::StatusCode;
-use axum_test::expect_json::__private::serde_trampoline::Serializer;
-use axum_test::expect_json::__private::serde_trampoline::de::DeserializeOwned;
 use bytes::Bytes;
+use serde::de::DeserializeOwned;
+use serde::Serializer;
 
 #[extension(pub(crate) trait BetterJsonError)]
 impl reqwest::Response {
