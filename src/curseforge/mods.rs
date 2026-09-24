@@ -19,7 +19,7 @@ pub struct Mod {
     pub summary: String,
     pub status: ModStatus,
     #[serde(rename = "downloadCount")]
-    pub download_count: usize,
+    pub download_count: u64,
     #[serde(rename = "isFeatured", default = "crate::util::default_true")]
     pub is_featured: bool,
     #[serde(rename = "primaryCategoryId")]
@@ -47,13 +47,13 @@ pub struct Mod {
     #[serde(rename = "allowModDistribution", default = "crate::util::default_true")]
     pub allow_mod_distribution: bool,
     #[serde(rename = "gamePopularityRank")]
-    pub game_popularity_rank: Option<usize>,
+    pub game_popularity_rank: Option<u64>,
     #[serde(rename = "isAvailable", default = "crate::util::default_true")]
     pub is_available: bool,
     #[serde(default = "crate::util::default_true")]
     pub has_comments_enabled: bool,
     #[serde(rename = "thumbsUpCount")]
-    pub thumbs_up_count: Option<usize>,
+    pub thumbs_up_count: Option<u64>,
     pub rating: Option<f64>,
     // TODO featuredProjectTag
     // TODO socialLinks
@@ -138,11 +138,11 @@ pub struct File {
     #[serde(rename = "fileDate")]
     pub date_uploaded: DateTime<Utc>,
     #[serde(rename = "fileLength")]
-    pub size: usize,
+    pub size: u64,
     #[serde(rename = "downloadCount")]
-    pub download_count: usize,
+    pub download_count: u64,
     #[serde(rename = "fileSizeOnDisk")]
-    pub size_on_disk: Option<usize>,
+    pub size_on_disk: Option<u64>,
     #[serde(rename = "downloadUrl")]
     pub download_url: Option<String>,
     #[serde(rename = "gameVersions")]
