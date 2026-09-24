@@ -15,6 +15,7 @@ use twilight_util::builder::message::{
     ActionRowBuilder, ButtonBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder,
     ThumbnailBuilder,
 };
+use crate::curseforge::mods::SocialLinkType;
 
 pub(crate) async fn project_embed_by_id(
     State(state): State<Arc<AppState>>,
@@ -60,9 +61,9 @@ pub(crate) async fn project_embed_by_id(
             let cf_button = ButtonBuilder::new(ButtonStyle::Link)
                 .label("CurseForge")
                 .emoji(EmojiReactionType::Custom {
+                    id: Id::new(1552609523561271396),
                     name: Some("curseforge".to_string()),
                     animated: false,
-                    id: Id::new(1552609523561271396),
                 })
                 .url(project_url)
                 .build();
@@ -76,6 +77,20 @@ pub(crate) async fn project_embed_by_id(
                     .build();
 
                 buttons = buttons.component(wiki_button);
+            }
+
+            if let Some(discord_url) = project.social_links.get(&SocialLinkType::Discord) {
+                let discord_button = ButtonBuilder::new(ButtonStyle::Link)
+                    .label("Discord")
+                    .emoji(EmojiReactionType::Custom {
+                        id: Id::new(1552678152931770458),
+                        name: Some("discord".to_string()),
+                        animated: false,
+                    })
+                    .url(discord_url)
+                    .build();
+
+                buttons = buttons.component(discord_button);
             }
 
             if let Some(issues_url) = project.links.issues_url {

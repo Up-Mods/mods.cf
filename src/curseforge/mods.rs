@@ -6,8 +6,11 @@ use reqwest::header::{CONTENT_TYPE, HeaderValue};
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_repr::Deserialize_repr;
+use serde_with::{NoneAsEmptyString, serde_as};
 use std::collections::HashMap;
-use serde_with::{serde_as, NoneAsEmptyString};
+
+use crate::curseforge::mods::SocialLinkType::Unknown;
+use serde_map_to_array::{HashMapToArray, KeyValueLabels};
 
 #[derive(Serialize, Deserialize)]
 pub struct Mod {
@@ -66,7 +69,8 @@ pub struct Mod {
     pub thumbs_up_count: Option<u64>,
     pub rating: Option<f64>,
     // TODO featuredProjectTag
-    // TODO socialLinks
+    #[serde(rename = "socialLinks", with = "HashMapToArray::<SocialLinkType, String, SocialLinkTypeKeyValueLabels>")]
+    pub social_links: HashMap<SocialLinkType, String>
 }
 
 #[serde_as]
@@ -83,6 +87,85 @@ pub struct ModLinks {
     #[serde(rename = "sourceUrl")]
     #[serde_as(as = "NoneAsEmptyString")]
     pub sources_url: Option<String>,
+}
+
+struct SocialLinkTypeKeyValueLabels;
+
+impl KeyValueLabels for SocialLinkTypeKeyValueLabels {
+    const KEY: &'static str = "type";
+    const VALUE: &'static str = "url";
+}
+
+#[derive(Serialize, Deserialize, Hash, Eq, PartialEq)]
+#[serde(from = "u8")]
+pub enum SocialLinkType {
+    #[serde(rename = "mastodon")]
+    Mastodon,
+    #[serde(rename = "discord")]
+    Discord,
+    #[serde(rename = "website")]
+    Website,
+    #[serde(rename = "facebook")]
+    Facebook,
+    #[serde(rename = "twitter")]
+    Twitter,
+    #[serde(rename = "instagram")]
+    Instagram,
+    #[serde(rename = "patreon")]
+    Patreon,
+    #[serde(rename = "twitch")]
+    Twitch,
+    #[serde(rename = "reddit")]
+    Reddit,
+    #[serde(rename = "youtube")]
+    YouTube,
+    #[serde(rename = "tiktok")]
+    TikTok,
+    #[serde(rename = "pinterest")]
+    Pinterest,
+    #[serde(rename = "github")]
+    GitHub,
+    #[serde(rename = "bluesky")]
+    Bluesky,
+    #[serde(rename = "paypal")]
+    Paypal,
+    #[serde(rename = "paypal_hosted")]
+    PaypalHosted,
+    #[serde(rename = "github_sponsors")]
+    GitHubSponsors,
+    #[serde(rename = "ko_fi")]
+    Kofi,
+    #[serde(rename = "buy_me_a_coffee")]
+    BuyMeACoffee,
+
+    Unknown(u8)
+}
+
+impl From<u8> for SocialLinkType {
+    fn from(value: u8) -> Self {
+        match value {
+            1 => SocialLinkType::Mastodon,
+            2 => SocialLinkType::Discord,
+            3 => SocialLinkType::Website,
+            4 => SocialLinkType::Facebook,
+            5 => SocialLinkType::Twitter,
+            6 => SocialLinkType::Instagram,
+            7 => SocialLinkType::Patreon,
+            8 => SocialLinkType::Twitch,
+            9 => SocialLinkType::Reddit,
+            10 => SocialLinkType::YouTube,
+            11 => SocialLinkType::TikTok,
+            12 => SocialLinkType::Pinterest,
+            13 => SocialLinkType::GitHub,
+            14 => SocialLinkType::Bluesky,
+            15 => SocialLinkType::Paypal,
+            16 => SocialLinkType::PaypalHosted,
+            17 => SocialLinkType::GitHubSponsors,
+            18 => SocialLinkType::Kofi,
+            19 => SocialLinkType::BuyMeACoffee,
+            value => Unknown(value),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize_repr)]
