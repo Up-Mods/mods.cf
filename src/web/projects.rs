@@ -89,7 +89,6 @@ pub(crate) async fn project_by_id(
                                 }
                             };
 
-                            log::info!("{component_json_url}");
 
                             return Html(
                                 PROJECTS_PREVIEW_HTML
