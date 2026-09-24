@@ -1,16 +1,18 @@
 use crate::curseforge::CurseforgeState;
-use crate::util::HealthResponse;
 use crate::{analytics, curseforge};
 use anyhow::Context;
 use axum::http::StatusCode;
 use axum::response::Redirect;
 use axum::routing::get;
 use axum::{Router, middleware};
+use health::HealthResponse;
 use std::env;
 use std::sync::Arc;
 use url::Url;
 
+pub mod api;
 mod files;
+mod health;
 pub mod projects;
 
 pub(crate) struct AppState {
@@ -21,6 +23,19 @@ pub(crate) struct AppState {
 
 pub(crate) struct HttpConfig {
     pub frontend_url: Url,
+}
+
+#[derive(Clone)]
+pub(crate) struct UserAgent {
+    pub value: String,
+}
+
+impl UserAgent {
+    pub(crate) fn new(value: impl Into<String>) -> Self {
+        Self {
+            value: value.into(),
+        }
+    }
 }
 
 pub async fn init_router(
@@ -39,7 +54,7 @@ pub async fn init_router(
         anyhow::Ok(())
     };
 
-    let router = Router::new()
+    let router: Router<()> = Router::new()
         .route(
             "/",
             get(async || Redirect::to("https://www.curseforge.com")),
@@ -48,6 +63,7 @@ pub async fn init_router(
             "/health",
             get(async || HealthResponse::from(StatusCode::OK)),
         )
+        .nest("/api", api::create_router(app_data.clone()))
         .route("/{project_id}", get(projects::project_by_id))
         .route("/f/{file_id}", get(files::file_by_id))
         .layer(middleware::from_fn_with_state(

@@ -6,17 +6,20 @@ edition = "2024"
 anyhow = "1.0.102"
 axum = "0.8.9"
 axum-test = "21.1.0"
-bytes = { version = "1.12.1"}
+bytes = { version = "1.12.1", features = ["serde"] }
 chrono = { version = "0.4.45", features = ["serde"] }
 dotenvy = { git = "https://github.com/allan2/dotenvy", rev = "fa25166994d6978bd2e002f0ed190c0c39674ebe", features = ["macros"] }
 env_logger = "0.11.11"
 extension-traits = "2.0.3"
+human-repr = "1.1.0"
 log = { version = "0.4.34", features = ["serde"] }
-posthog-rs = { version = "0.25.5", features = ["capture-v1"] }
+posthog-rs = { version = "0.26.0", features = ["capture-v1"] }
 reqwest = { version = "0.13.5", features = ["json", "gzip", "brotli", "zstd", "deflate"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 serde_path_to_error = "0.1.20"
 serde_repr = "0.1.21"
 tokio = { version = "1.53.1", features = ["full"] }
-url = "2.5.8"
+twilight-model = "0.17.1"
+twilight-util = { version = "0.17.0", features = ["builder"] }
+url = { version = "2.5.8", features = ["serde"] }

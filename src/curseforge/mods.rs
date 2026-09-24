@@ -1,5 +1,5 @@
 use crate::curseforge::API_BASE_URL;
-use crate::util::BetterJsonError;
+use crate::util::web::BetterJsonError;
 use anyhow::{Context, bail};
 use chrono::{DateTime, Utc};
 use reqwest::header::{CONTENT_TYPE, HeaderValue};
@@ -20,7 +20,10 @@ pub struct Mod {
     pub status: ModStatus,
     #[serde(rename = "downloadCount")]
     pub download_count: u64,
-    #[serde(rename = "isFeatured", default = "crate::util::default_true")]
+    #[serde(
+        rename = "isFeatured",
+        default = "crate::util::serialization::default_true"
+    )]
     pub is_featured: bool,
     #[serde(rename = "primaryCategoryId")]
     pub primary_category_id: u64,
@@ -44,13 +47,19 @@ pub struct Mod {
     pub date_modified: Option<DateTime<Utc>>,
     #[serde(rename = "dateReleased")]
     pub date_released: Option<DateTime<Utc>>,
-    #[serde(rename = "allowModDistribution", default = "crate::util::default_true")]
+    #[serde(
+        rename = "allowModDistribution",
+        default = "crate::util::serialization::default_true"
+    )]
     pub allow_mod_distribution: bool,
     #[serde(rename = "gamePopularityRank")]
     pub game_popularity_rank: Option<u64>,
-    #[serde(rename = "isAvailable", default = "crate::util::default_true")]
+    #[serde(
+        rename = "isAvailable",
+        default = "crate::util::serialization::default_true"
+    )]
     pub is_available: bool,
-    #[serde(default = "crate::util::default_true")]
+    #[serde(default = "crate::util::serialization::default_true")]
     pub has_comments_enabled: bool,
     #[serde(rename = "thumbsUpCount")]
     pub thumbs_up_count: Option<u64>,
@@ -124,7 +133,10 @@ pub struct File {
     pub game_id: u64,
     #[serde(rename = "modId")]
     pub project_id: u64,
-    #[serde(rename = "isAvailable", default = "crate::util::default_true")]
+    #[serde(
+        rename = "isAvailable",
+        default = "crate::util::serialization::default_true"
+    )]
     pub is_available: bool,
     #[serde(rename = "displayName")]
     pub display_name: Option<String>,
@@ -150,7 +162,10 @@ pub struct File {
     // #[serde(rename = "sortableGameVersions")]
     // pub sortable_game_versions: Vec<SortableGameVersion>,
     // pub dependencies: vec<FileDependency>,
-    #[serde(rename = "exposeAsAlternative", default = "crate::util::default_true")]
+    #[serde(
+        rename = "exposeAsAlternative",
+        default = "crate::util::serialization::default_true"
+    )]
     pub expose_as_alternative: bool,
     #[serde(rename = "parentProjectFileId")]
     pub parent_project_file_id: Option<u64>,
@@ -306,8 +321,9 @@ pub async fn get_mod(client: &Client, project_id: u64) -> anyhow::Result<Option<
         }
     }
 
-    let get_mod_response: GetModResponse = response.json_with_error().await?;
-    Ok(Some(get_mod_response.data))
+    Ok(Some(
+        response.json_with_error::<GetModResponse>().await?.data,
+    ))
 }
 
 pub async fn get_files(client: &Client, file_ids: Vec<u64>) -> anyhow::Result<HashMap<u64, File>> {
@@ -331,8 +347,9 @@ pub async fn get_files(client: &Client, file_ids: Vec<u64>) -> anyhow::Result<Ha
         }
     }
 
-    let get_files_response: GetFilesResponse = response.json_with_error().await?;
-    Ok(get_files_response
+    Ok(response
+        .json_with_error::<GetFilesResponse>()
+        .await?
         .data
         .iter()
         .map(|file| (file.id, file.clone()))

@@ -3,6 +3,8 @@ extern crate extension_traits;
 
 mod analytics;
 mod curseforge;
+mod discord;
+mod feature_flags;
 mod util;
 pub mod web;
 
