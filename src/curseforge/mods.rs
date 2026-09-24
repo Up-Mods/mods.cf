@@ -7,6 +7,7 @@ use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_repr::Deserialize_repr;
 use std::collections::HashMap;
+use serde_with::{serde_as, NoneAsEmptyString};
 
 #[derive(Serialize, Deserialize)]
 pub struct Mod {
@@ -68,15 +69,19 @@ pub struct Mod {
     // TODO socialLinks
 }
 
+#[serde_as]
 #[derive(Serialize, Deserialize)]
 pub struct ModLinks {
     #[serde(rename = "websiteUrl")]
     pub website_url: String,
     #[serde(rename = "wikiUrl")]
+    #[serde_as(as = "NoneAsEmptyString")]
     pub wiki_url: Option<String>,
     #[serde(rename = "issuesUrl")]
+    #[serde_as(as = "NoneAsEmptyString")]
     pub issues_url: Option<String>,
     #[serde(rename = "sourceUrl")]
+    #[serde_as(as = "NoneAsEmptyString")]
     pub sources_url: Option<String>,
 }
 
