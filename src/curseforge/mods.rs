@@ -1,16 +1,19 @@
+#![allow(dead_code)]
+
 use crate::curseforge::API_BASE_URL;
+use crate::curseforge::mods::SocialLinkType::Unknown;
 use crate::util::web::BetterJsonError;
 use anyhow::{Context, bail};
 use chrono::{DateTime, Utc};
 use reqwest::header::{CONTENT_TYPE, HeaderValue};
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
+use serde_map_to_array::{HashMapToArray, KeyValueLabels};
 use serde_repr::Deserialize_repr;
 use serde_with::{NoneAsEmptyString, serde_as, skip_serializing_none};
+use std::borrow::Cow;
 use std::collections::HashMap;
-
-use crate::curseforge::mods::SocialLinkType::Unknown;
-use serde_map_to_array::{HashMapToArray, KeyValueLabels};
+use std::fmt::{Display, Formatter};
 use string_truncate::Truncate;
 
 #[serde_as]
@@ -298,9 +301,13 @@ impl File {
         get_file_changelog(client, self.project_id, self.id).await
     }
 
-    pub async fn get_truncated_changelog(&self, client: &Client, len: usize, ellipsis: &str) -> anyhow::Result<Option<String>> {
+    pub async fn get_truncated_changelog(
+        &self,
+        client: &Client,
+        len: usize,
+    ) -> anyhow::Result<Option<String>> {
         let result = self.get_changelog(client).await?;
-        Ok(result.map(|s| s.truncate_with(ellipsis, len)))
+        Ok(result.map(|s| s.truncate_words(len)))
     }
 }
 
@@ -310,6 +317,38 @@ pub enum FileReleaseType {
     Release = 1,
     Beta = 2,
     Alpha = 3,
+}
+
+impl FileReleaseType {
+    pub(crate) fn translated(&self, locale: &str) -> Cow<'_, str> {
+        match self {
+            FileReleaseType::Release => t!("embed.discord.release_type.release", locale = locale),
+            FileReleaseType::Beta => t!("embed.discord.release_type.beta", locale = locale),
+            FileReleaseType::Alpha => t!("embed.discord.release_type.alpha", locale = locale),
+        }
+    }
+
+    pub fn as_emoji(&self) -> &'static str {
+        match self {
+            FileReleaseType::Release => "<:cf_release:1554239853598744626>",
+            FileReleaseType::Beta => "<:cf_beta:1554239880685428907>",
+            FileReleaseType::Alpha => "<:cf_alpha:1554239910263660554>",
+        }
+    }
+}
+
+impl Display for FileReleaseType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                FileReleaseType::Release => "release",
+                FileReleaseType::Beta => "beta",
+                FileReleaseType::Alpha => "alpha",
+            }
+        )
+    }
 }
 
 #[derive(Serialize, Deserialize_repr, Clone)]
@@ -495,14 +534,14 @@ pub fn get_file_changelog_url(project_id: u64, file_id: u64) -> String {
     format!("{API_BASE_URL}/v1/mods/{project_id}/files/{file_id}/changelog")
 }
 
-pub async fn get_file_changelog(client: &Client, project_id: u64, file_id: u64) -> anyhow::Result<Option<String>> {
+pub async fn get_file_changelog(
+    client: &Client,
+    project_id: u64,
+    file_id: u64,
+) -> anyhow::Result<Option<String>> {
     let url = get_file_changelog_url(project_id, file_id);
 
-    let response = client.post(&url)
-        .header(CONTENT_TYPE, HeaderValue::from_static("application/json"))
-        .send()
-        .await
-        .context(url.clone())?;
+    let response = client.get(&url).send().await.context(url.clone())?;
 
     if !response.status().is_success() {
         match response.status() {
@@ -515,8 +554,7 @@ pub async fn get_file_changelog(client: &Client, project_id: u64, file_id: u64) 
         .json_with_error::<GetChangelogResponse>()
         .await?
         .data
-        .filter(|s| !s.is_empty())
-    )
+        .filter(|s| !s.is_empty()))
 }
 
 #[cfg(test)]

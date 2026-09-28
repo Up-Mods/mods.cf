@@ -7,3 +7,21 @@ embed:
       -# *%{downloads} downloads*
       
       %{summary}
+    file: |
+      # %{file_release_type_emoji} %{file_name} - CurseForge
+      -# *%{file_downloads} downloads*
+      ---
+      ### Changelog:
+      %{file_changelog}
+    file_changelog:
+      error: "*unable to retrieve changelog.*"
+      empty: "*no changelog provided*"
+    label:
+      curseforge: CurseForge
+      discord: Discord
+      issues: Issues
+      wiki: Wiki
+    release_type:
+      release: Release
+      beta: Beta
+      alpha: Alpha
