@@ -1778,6 +1778,7 @@ dependencies = [
  "serde_path_to_error",
  "serde_repr",
  "serde_with",
+ "string-truncate",
  "tokio",
  "twilight-model",
  "twilight-util",
@@ -2950,6 +2951,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
+name = "string-truncate"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4740a8c751fa23bdabc7dae94a5b27ac25869f8a9c2bd4983003bba6443d7fc6"
+dependencies = [
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "strsim"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3356,6 +3366,12 @@ name = "unicode-ident"
 version = "1.0.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954"
+
+[[package]]
+name = "unicode-segmentation"
+version = "1.13.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6f5d3c3b1bf09027a88a6bc961fc00497d651009560b5463668dc81b0fa87a8"
 
 [[package]]
 name = "unicode-width"

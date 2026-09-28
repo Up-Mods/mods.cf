@@ -22,6 +22,7 @@ serde_json = "1.0.151"
 serde_path_to_error = "0.1.20"
 serde_repr = "0.1.21"
 serde_with = "3.23.0"
+string-truncate = "0.1.0"
 tokio = { version = "1.53.1", features = ["full"] }
 twilight-model = "0.17.1"
 twilight-util = { version = "0.17.0", features = ["builder"] }
