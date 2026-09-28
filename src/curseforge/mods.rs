@@ -6,7 +6,7 @@ use reqwest::header::{CONTENT_TYPE, HeaderValue};
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_repr::Deserialize_repr;
-use serde_with::{serde_as, skip_serializing_none, NoneAsEmptyString};
+use serde_with::{NoneAsEmptyString, serde_as, skip_serializing_none};
 use std::collections::HashMap;
 
 use crate::curseforge::mods::SocialLinkType::Unknown;
@@ -72,7 +72,7 @@ pub struct Mod {
     pub rating: Option<f64>,
     // TODO featuredProjectTag
     #[serde(rename = "socialLinks")]
-    pub social_links: Option<SocialLinks>
+    pub social_links: Option<SocialLinks>,
 }
 
 #[serde_as]
@@ -101,7 +101,10 @@ impl KeyValueLabels for SocialLinkTypeKeyValueLabels {
 // FIXME find a better way to serialize than this jank
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(transparent)]
-pub struct SocialLinks(#[serde(with = "HashMapToArray::<SocialLinkType, String, SocialLinkTypeKeyValueLabels>")] pub HashMap<SocialLinkType, String>);
+pub struct SocialLinks(
+    #[serde(with = "HashMapToArray::<SocialLinkType, String, SocialLinkTypeKeyValueLabels>")]
+    pub  HashMap<SocialLinkType, String>,
+);
 
 impl From<SocialLinks> for HashMap<SocialLinkType, String> {
     fn from(value: SocialLinks) -> Self {
@@ -151,7 +154,7 @@ pub enum SocialLinkType {
     #[serde(rename = "buy_me_a_coffee")]
     BuyMeACoffee,
 
-    Unknown(u8)
+    Unknown(u8),
 }
 
 impl From<u8> for SocialLinkType {
