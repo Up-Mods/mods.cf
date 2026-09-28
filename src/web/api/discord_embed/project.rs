@@ -1,12 +1,15 @@
+use crate::analytics::CaptureEventProperties;
 use crate::curseforge;
+use crate::curseforge::mods::SocialLinkType;
 use crate::discord::ComponentHolder;
 use crate::web::AppState;
 use crate::web::api::ApiError;
 use crate::web::api::discord_embed::EmbedParams;
-use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
+use axum::{Extension, Json};
 use human_repr::HumanCount;
+use posthog_rs::Event;
 use std::sync::Arc;
 use twilight_model::channel::message::EmojiReactionType;
 use twilight_model::channel::message::component::{ButtonStyle, UnfurledMediaItem};
@@ -15,10 +18,10 @@ use twilight_util::builder::message::{
     ActionRowBuilder, ButtonBuilder, ContainerBuilder, SectionBuilder, TextDisplayBuilder,
     ThumbnailBuilder,
 };
-use crate::curseforge::mods::SocialLinkType;
 
 pub(crate) async fn project_embed_by_id(
     State(state): State<Arc<AppState>>,
+    Extension(mut event): Extension<Event>,
     Path(project_id): Path<u64>,
     Query(params): Query<EmbedParams>,
 ) -> impl IntoResponse {
@@ -28,9 +31,16 @@ pub(crate) async fn project_embed_by_id(
                 return ApiError::not_found(None).into_response();
             };
 
+            let hl = params.content_language();
+            event.with("content_language", hl);
+
+            if let Some(embed_time) = params.embed_timestamp() {
+                event.with("embed_timestamp", embed_time);
+            }
+
             let title_text = t!(
                 "embed.discord.project",
-                locale = &params.content_language.unwrap_or_default(),
+                locale = hl,
                 title = project.name,
                 summary = project.summary,
                 downloads = project.download_count.human_count_bare()
@@ -43,8 +53,9 @@ pub(crate) async fn project_embed_by_id(
                 width: None,
                 content_type: None,
             })
-            .description(format!(
-                "Icon for {project_name}",
+            .description(t!(
+                "embed.discord.project_icon_alt",
+                locale = hl,
                 project_name = project.name
             ))
             .build();
@@ -59,7 +70,7 @@ pub(crate) async fn project_embed_by_id(
                 .unwrap_or(project.links.website_url);
 
             let cf_button = ButtonBuilder::new(ButtonStyle::Link)
-                .label("CurseForge")
+                .label(t!("embed.discord.label.curseforge", locale = hl))
                 .emoji(EmojiReactionType::Custom {
                     id: Id::new(1552609523561271396),
                     name: Some("curseforge".to_string()),
@@ -72,16 +83,19 @@ pub(crate) async fn project_embed_by_id(
 
             if let Some(wiki_url) = project.links.wiki_url {
                 let wiki_button = ButtonBuilder::new(ButtonStyle::Link)
-                    .label("Wiki")
+                    .label(t!("embed.discord.label.wiki", locale = hl))
                     .url(wiki_url)
                     .build();
 
                 buttons = buttons.component(wiki_button);
             }
 
-            if let Some(discord_url) = project.social_links.map(|map| map.0.get(&SocialLinkType::Discord).cloned()).flatten() {
+            if let Some(discord_url) = project
+                .social_links
+                .and_then(|map| map.0.get(&SocialLinkType::Discord).cloned())
+            {
                 let discord_button = ButtonBuilder::new(ButtonStyle::Link)
-                    .label("Discord")
+                    .label(t!("embed.discord.label.discord", locale = hl))
                     .emoji(EmojiReactionType::Custom {
                         id: Id::new(1552678152931770458),
                         name: Some("discord".to_string()),
@@ -95,7 +109,7 @@ pub(crate) async fn project_embed_by_id(
 
             if let Some(issues_url) = project.links.issues_url {
                 let issues_button = ButtonBuilder::new(ButtonStyle::Link)
-                    .label("Issues")
+                    .label(t!("embed.discord.label.issues", locale = hl))
                     .url(issues_url)
                     .build();
 

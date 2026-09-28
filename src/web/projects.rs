@@ -4,11 +4,11 @@ use axum::Extension;
 use axum::extract::{Path, Request, State};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Redirect};
+use chrono::Utc;
 use posthog_rs::{CaptureExceptionOptions, EvaluateFlagsOptions, Event, FlagValue};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
-use std::time::SystemTime;
 
 const PROJECTS_PREVIEW_HTML: &str = include_str!("previews/project.html");
 
@@ -68,11 +68,8 @@ pub(crate) async fn project_by_id(
                             );
 
                             let mut url_partial = format!(
-                                "api/discord-embed/project/{project_id}?t={time}",
-                                time = SystemTime::now()
-                                    .duration_since(SystemTime::UNIX_EPOCH)
-                                    .unwrap_or_default()
-                                    .as_secs()
+                                "api/discord-embed/project/{project_id}?et={time}",
+                                time = Utc::now().timestamp()
                             );
 
                             if let Some(query) = req.uri().query() {
@@ -101,7 +98,6 @@ pub(crate) async fn project_by_id(
                             return Html(
                                 PROJECTS_PREVIEW_HTML
                                     .replace("{COMPONENT_JSON_URL}", component_json_url.as_str())
-                                    .replace("{PROJECT_ID}", &project_id.to_string())
                                     .replace("{PROJECT_TITLE}", &project.name)
                                     .replace("{PROJECT_URL}", &project.links.website_url)
                                     .replace(

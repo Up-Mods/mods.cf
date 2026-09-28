@@ -70,7 +70,8 @@ pub(crate) async fn capture_analytics(
         && let Some(full_url) = full_url
     {
         let hostname = full_url.host_str().unwrap_or_default().to_string();
-        let event = Event::new_anon("$pageview")
+        let mut event = Event::new_anon("$pageview");
+        event
             .with("$current_url", full_url.as_str())
             .with("$host", &hostname)
             .with("$pathname", path.path())
@@ -80,12 +81,11 @@ pub(crate) async fn capture_analytics(
 
         response = next.run(req).await;
 
-        if let Some(event) = response.extensions().get::<Event>().cloned() {
-            state.posthog_client.capture(
-                event
-                    .with("status", response.status().as_u16())
-                    .with("success", response.status().is_success_or_redirect()),
-            );
+        if let Some(mut event) = response.extensions().get::<Event>().cloned() {
+            event
+                .with("status", response.status().as_u16())
+                .with("success", response.status().is_success_or_redirect());
+            state.posthog_client.capture(event);
         }
     } else {
         response = next.run(req).await;
@@ -102,7 +102,7 @@ pub(crate) async fn capture_analytics(
 
 #[extension(pub(crate) trait CaptureEventProperties)]
 impl Event {
-    fn with<K: Into<String>, V: Serialize>(mut self, key: K, value: V) -> Self {
+    fn with<K: Into<String>, V: Serialize>(&mut self, key: K, value: V) -> &mut Self {
         if let Err(err) = self.insert_prop(key, value) {
             log::error!("Unable to set event error context: {err:#}");
         }
