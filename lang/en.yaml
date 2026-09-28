@@ -1,6 +1,7 @@
 ---
 embed:
   discord:
+    project_icon_alt: Icon for %{project_name}
     project: |
       # %{title} - CurseForge
       -# *%{downloads} downloads*
