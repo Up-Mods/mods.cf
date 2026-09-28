@@ -11,6 +11,7 @@ use std::collections::HashMap;
 
 use crate::curseforge::mods::SocialLinkType::Unknown;
 use serde_map_to_array::{HashMapToArray, KeyValueLabels};
+use string_truncate::Truncate;
 
 #[serde_as]
 #[derive(Serialize, Deserialize)]
@@ -288,6 +289,21 @@ pub struct File {
     // pub modules: Vec<FileModule>
 }
 
+impl File {
+    pub fn changelog_url(&self) -> String {
+        get_file_changelog_url(self.project_id, self.id)
+    }
+
+    pub async fn get_changelog(&self, client: &Client) -> anyhow::Result<Option<String>> {
+        get_file_changelog(client, self.project_id, self.id).await
+    }
+
+    pub async fn get_truncated_changelog(&self, client: &Client, len: usize, ellipsis: &str) -> anyhow::Result<Option<String>> {
+        let result = self.get_changelog(client).await?;
+        Ok(result.map(|s| s.truncate_with(ellipsis, len)))
+    }
+}
+
 #[derive(Serialize, Deserialize_repr, Clone)]
 #[repr(u8)]
 pub enum FileReleaseType {
@@ -398,25 +414,24 @@ pub enum ModLoaderType {
     NeoForge = 6,
 }
 
-#[derive(Deserialize)]
-struct GetModResponse {
-    data: Mod,
-}
-
 #[derive(Serialize)]
 struct GetFilesRequest {
     #[serde(rename = "fileIds")]
     file_ids: Vec<u64>,
 }
 
-#[derive(Deserialize)]
-struct GetFilesResponse {
-    data: Vec<File>,
+type GetModResponse = DataResponse<Mod>;
+type GetFilesResponse = DataResponse<Vec<File>>;
+type GetChangelogResponse = DataResponse<Option<String>>;
+
+#[derive(Debug, Deserialize)]
+pub struct DataResponse<T> {
+    pub data: T,
 }
 
 pub async fn get_mod(client: &Client, project_id: u64) -> anyhow::Result<Option<Mod>> {
     let url = format!("{API_BASE_URL}/v1/mods/{project_id}");
-    let response = client.get(url.clone()).send().await.context(url.clone())?;
+    let response = client.get(&url).send().await.context(url.clone())?;
 
     if !response.status().is_success() {
         match response.status() {
@@ -436,7 +451,7 @@ pub async fn get_files(client: &Client, file_ids: Vec<u64>) -> anyhow::Result<Ha
     let req = GetFilesRequest { file_ids };
 
     let response = client
-        .post(url.clone())
+        .post(&url)
         .header(CONTENT_TYPE, HeaderValue::from_static("application/json"))
         .json(&req)
         .send()
@@ -474,6 +489,34 @@ pub async fn get_file_info(client: &Client, file_id: u64) -> anyhow::Result<Opti
         }
         len => bail!("Expected 1 result file, got {len}"),
     }
+}
+
+pub fn get_file_changelog_url(project_id: u64, file_id: u64) -> String {
+    format!("{API_BASE_URL}/v1/mods/{project_id}/files/{file_id}/changelog")
+}
+
+pub async fn get_file_changelog(client: &Client, project_id: u64, file_id: u64) -> anyhow::Result<Option<String>> {
+    let url = get_file_changelog_url(project_id, file_id);
+
+    let response = client.post(&url)
+        .header(CONTENT_TYPE, HeaderValue::from_static("application/json"))
+        .send()
+        .await
+        .context(url.clone())?;
+
+    if !response.status().is_success() {
+        match response.status() {
+            StatusCode::NOT_FOUND => return Ok(None),
+            _ => bail!("Error trying to contact Curseforge API!"),
+        }
+    }
+
+    Ok(response
+        .json_with_error::<GetChangelogResponse>()
+        .await?
+        .data
+        .filter(|s| !s.is_empty())
+    )
 }
 
 #[cfg(test)]
