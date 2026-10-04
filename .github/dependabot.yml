@@ -5,8 +5,13 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    commit-message:
+      prefix: "⬆️"
 
   - package-ecosystem: cargo
     directory: /
     schedule:
       interval: monthly
+    commit-message:
+      prefix: "⬆️"
+
