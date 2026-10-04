@@ -3,13 +3,20 @@ use rootcause::prelude::*;
 use std::net::{IpAddr, Ipv6Addr, SocketAddr};
 use tokio::net::TcpListener;
 use tokio::signal;
+use tracing::Level;
 
 const PORT: u16 = 3000;
 
 #[dotenvy::load(required = false)]
 #[tokio::main]
 async fn main() -> rootcause::Result<()> {
-    env_logger::init();
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::builder()
+                .with_default_directive(Level::INFO.into())
+                .from_env_lossy(),
+        )
+        .init();
 
     let (app, shutdown) = web::init_router(true).await?;
     let listener = TcpListener::bind(SocketAddr::new(IpAddr::from(Ipv6Addr::UNSPECIFIED), PORT))
