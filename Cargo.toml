@@ -15,6 +15,7 @@ human-repr = "1.1.0"
 log = { version = "0.4.34", features = ["serde"] }
 posthog-rs = { version = "0.27.0", features = ["capture-v1"] }
 reqwest = { version = "0.13.5", features = ["json", "gzip", "brotli", "zstd", "deflate"] }
+rootcause = "0.13.0"
 rust-i18n = "4.2.2"
 serde = { version = "1.0.229", features = ["derive"] }
 serde-map-to-array = { version = "3.0.0", features = ["std"] }
