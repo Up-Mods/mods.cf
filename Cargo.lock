@@ -1759,7 +1759,6 @@ dependencies = [
 name = "mods_cf"
 version = "0.0.0"
 dependencies = [
- "anyhow",
  "axum",
  "axum-test",
  "bytes",
