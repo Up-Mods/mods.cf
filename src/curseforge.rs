@@ -10,7 +10,7 @@ pub(crate) struct CurseforgeState {
     pub eternal_api_client: Client,
 }
 
-pub(crate) fn init() -> anyhow::Result<CurseforgeState> {
+pub(crate) fn init() -> rootcause::Result<CurseforgeState> {
     let eternal_api_token = env::var("CURSEFORGE_ETERNAL_API_TOKEN")
         .expect("Please specify CURSEFORGE_ETERNAL_API_TOKEN for Curseforge Eternal API!");
 

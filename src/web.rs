@@ -1,11 +1,11 @@
 use crate::curseforge::CurseforgeState;
 use crate::{analytics, curseforge};
-use anyhow::Context;
 use axum::http::StatusCode;
 use axum::response::Redirect;
 use axum::routing::get;
 use axum::{Router, middleware};
 use health::HealthResponse;
+use rootcause::prelude::ResultExt;
 use std::env;
 use std::sync::Arc;
 use url::Url;
@@ -40,7 +40,7 @@ impl UserAgent {
 
 pub async fn init_router(
     enable_analytics: bool,
-) -> anyhow::Result<(Router, impl AsyncFnOnce() -> anyhow::Result<()>)> {
+) -> rootcause::Result<(Router, impl AsyncFnOnce() -> rootcause::Result<()>)> {
     let posthog_client = analytics::init(enable_analytics).await?;
     let app_data = Arc::new(AppState {
         http: init_http()?,
@@ -51,7 +51,7 @@ pub async fn init_router(
     let shutdown = async move || {
         copied_state.posthog_client.shutdown().await;
 
-        anyhow::Ok(())
+        Ok(())
     };
 
     let router: Router<()> = Router::new()
@@ -75,10 +75,10 @@ pub async fn init_router(
     Ok((router, shutdown))
 }
 
-fn init_http() -> anyhow::Result<HttpConfig> {
+fn init_http() -> rootcause::Result<HttpConfig> {
     let frontend_url = match env::var("FRONTEND_URL").ok() {
         Some(url) => Url::parse(&url).context("FRONTEND_URL not set to a valid URL")?,
-        None => Url::parse("http://localhost").expect("unable to parse localhost URL"),
+        None => Url::parse("http://localhost").context("unable to parse localhost URL")?,
     };
 
     Ok(HttpConfig { frontend_url })
@@ -87,11 +87,11 @@ fn init_http() -> anyhow::Result<HttpConfig> {
 #[cfg(test)]
 pub mod test {
     use crate::web::init_router;
-    use anyhow::Context;
     use axum_test::TestServer;
+    use rootcause::prelude::*;
 
     pub(crate) async fn new_test_server()
-    -> anyhow::Result<(TestServer, impl AsyncFnOnce() -> anyhow::Result<()>)> {
+    -> rootcause::Result<(TestServer, impl AsyncFnOnce() -> rootcause::Result<()>)> {
         let (app, shutdown) = init_router(false)
             .await
             .context("Unable to create test server")?;

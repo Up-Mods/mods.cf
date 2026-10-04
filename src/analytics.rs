@@ -1,17 +1,17 @@
 use crate::util::web::StatusExt;
 use crate::web::{AppState, UserAgent};
-use anyhow::Context;
 use axum::extract::{Request, State};
 use axum::http::StatusCode;
 use axum::http::header::USER_AGENT;
 use axum::middleware::Next;
 use axum::response::Response;
 use posthog_rs::{Client, ClientOptionsBuilder, Event};
+use rootcause::prelude::*;
 use serde::Serialize;
 use std::env;
 use std::sync::Arc;
 
-pub(crate) async fn init(enable: bool) -> anyhow::Result<Client> {
+pub(crate) async fn init(enable: bool) -> rootcause::Result<Client> {
     let mut builder = ClientOptionsBuilder::default();
 
     if enable && let Some(posthog_url) = env::var("POSTHOG_INSTANCE_URL").ok() {

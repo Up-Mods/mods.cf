@@ -3,10 +3,10 @@
 use crate::curseforge::API_BASE_URL;
 use crate::curseforge::mods::SocialLinkType::Unknown;
 use crate::util::web::BetterJsonError;
-use anyhow::{Context, bail};
 use chrono::{DateTime, Utc};
 use reqwest::header::{CONTENT_TYPE, HeaderValue};
 use reqwest::{Client, StatusCode};
+use rootcause::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_map_to_array::{HashMapToArray, KeyValueLabels};
 use serde_repr::Deserialize_repr;
@@ -297,7 +297,7 @@ impl File {
         get_file_changelog_url(self.project_id, self.id)
     }
 
-    pub async fn get_changelog(&self, client: &Client) -> anyhow::Result<Option<String>> {
+    pub async fn get_changelog(&self, client: &Client) -> rootcause::Result<Option<String>> {
         get_file_changelog(client, self.project_id, self.id).await
     }
 
@@ -305,7 +305,7 @@ impl File {
         &self,
         client: &Client,
         len: usize,
-    ) -> anyhow::Result<Option<String>> {
+    ) -> rootcause::Result<Option<String>> {
         let result = self.get_changelog(client).await?;
         Ok(result.map(|s| s.truncate_words(len)))
     }
@@ -468,7 +468,7 @@ pub struct DataResponse<T> {
     pub data: T,
 }
 
-pub async fn get_mod(client: &Client, project_id: u64) -> anyhow::Result<Option<Mod>> {
+pub async fn get_mod(client: &Client, project_id: u64) -> rootcause::Result<Option<Mod>> {
     let url = format!("{API_BASE_URL}/v1/mods/{project_id}");
     let response = client.get(&url).send().await.context(url.clone())?;
 
@@ -484,7 +484,10 @@ pub async fn get_mod(client: &Client, project_id: u64) -> anyhow::Result<Option<
     ))
 }
 
-pub async fn get_files(client: &Client, file_ids: Vec<u64>) -> anyhow::Result<HashMap<u64, File>> {
+pub async fn get_files(
+    client: &Client,
+    file_ids: Vec<u64>,
+) -> rootcause::Result<HashMap<u64, File>> {
     let url = format!("{API_BASE_URL}/v1/mods/files");
 
     let req = GetFilesRequest { file_ids };
@@ -514,7 +517,10 @@ pub async fn get_files(client: &Client, file_ids: Vec<u64>) -> anyhow::Result<Ha
         .collect())
 }
 
-pub async fn get_file_info(client: &Client, file_id: u64) -> anyhow::Result<Option<(Mod, File)>> {
+pub async fn get_file_info(
+    client: &Client,
+    file_id: u64,
+) -> rootcause::Result<Option<(Mod, File)>> {
     let files = get_files(client, vec![file_id]).await?;
     match files.len() {
         0 => Ok(None),
@@ -538,7 +544,7 @@ pub async fn get_file_changelog(
     client: &Client,
     project_id: u64,
     file_id: u64,
-) -> anyhow::Result<Option<String>> {
+) -> rootcause::Result<Option<String>> {
     let url = get_file_changelog_url(project_id, file_id);
 
     let response = client.get(&url).send().await.context(url.clone())?;
@@ -563,7 +569,7 @@ mod test {
     use crate::{async_tests_with_env, curseforge};
 
     async_tests_with_env! {
-        async fn should_not_throw() -> anyhow::Result<()> {
+        async fn should_not_throw() -> rootcause::Result<()> {
             let state = curseforge::init()?;
 
             let result = get_mod(&state.eternal_api_client, 257814).await;
@@ -571,7 +577,7 @@ mod test {
             Ok(())
         }
 
-        async fn project_exists() -> anyhow::Result<()> {
+        async fn project_exists() -> rootcause::Result<()> {
             let state = curseforge::init()?;
 
             let result = get_mod(&state.eternal_api_client, 911456).await;
@@ -579,7 +585,7 @@ mod test {
             Ok(())
         }
 
-        async fn validate_project_url() -> anyhow::Result<()> {
+        async fn validate_project_url() -> rootcause::Result<()> {
             let state = curseforge::init()?;
 
             let result = get_mod(&state.eternal_api_client, 911456).await?;

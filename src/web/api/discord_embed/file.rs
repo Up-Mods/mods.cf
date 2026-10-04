@@ -1,4 +1,3 @@
-use std::error::Error;
 use crate::analytics::CaptureEventProperties;
 use crate::curseforge;
 use crate::curseforge::mods::SocialLinkType;
@@ -11,6 +10,8 @@ use axum::response::IntoResponse;
 use axum::{Extension, Json};
 use human_repr::HumanCount;
 use posthog_rs::{CaptureExceptionOptions, Event};
+use rootcause::compat::boxed_error::IntoBoxedError;
+use std::error::Error;
 use std::sync::Arc;
 use twilight_model::channel::message::EmojiReactionType;
 use twilight_model::channel::message::component::{ButtonStyle, UnfurledMediaItem};
@@ -46,7 +47,7 @@ pub(crate) async fn file_embed_by_id(
                 Err(err) => {
                     log::error!("Unable to get file changelog for {file_id}! {err:#}");
 
-                    let real_error = err.into_boxed_dyn_error();
+                    let real_error = err.into_boxed_error();
                     state
                         .posthog_client
                         .capture_exception_with::<dyn Error + Send + Sync>(

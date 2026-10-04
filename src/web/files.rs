@@ -148,7 +148,7 @@ mod test {
     use reqwest::StatusCode;
 
     async_tests_with_env! {
-        async fn should_redirect_to_project_files() -> anyhow::Result<()> {
+        async fn should_redirect_to_project_files() -> rootcause::Result<()> {
             let (server, shutdown) = new_test_server().await?;
 
             let response = server.get("/f/6774233").await;

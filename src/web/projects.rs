@@ -129,7 +129,7 @@ mod test {
     use reqwest::StatusCode;
 
     async_tests_with_env! {
-        async fn should_redirect_to_project() -> anyhow::Result<()> {
+        async fn should_redirect_to_project() -> rootcause::Result<()> {
             let (server, shutdown) = new_test_server().await?;
 
             let response = server.get("/911456").await;

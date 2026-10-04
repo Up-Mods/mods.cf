@@ -1,13 +1,13 @@
 use crate::web::UserAgent;
-use anyhow::Context;
 use axum::http::StatusCode;
 use bytes::Bytes;
+use rootcause::prelude::*;
 use serde::Serializer;
 use serde::de::DeserializeOwned;
 
 #[extension(pub(crate) trait BetterJsonError)]
 impl reqwest::Response {
-    async fn json_with_error<T>(self) -> anyhow::Result<T>
+    async fn json_with_error<T>(self) -> rootcause::Result<T>
     where
         T: DeserializeOwned,
     {
@@ -15,10 +15,10 @@ impl reqwest::Response {
         let content: Bytes = self
             .bytes()
             .await
-            .with_context(|| format!("Unable to read response body for {url}"))?;
+            .context_with(|| format!("Unable to read response body for {url}"))?;
         let reader = &mut serde_json::Deserializer::from_slice(&content);
         let json = serde_path_to_error::deserialize(reader)
-            .with_context(|| format!("Unable to decode response for {url}"))?;
+            .context_with(|| format!("Unable to decode response for {url}"))?;
 
         Ok(json)
     }
