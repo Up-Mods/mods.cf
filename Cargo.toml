@@ -24,6 +24,8 @@ serde_repr = "0.1.21"
 serde_with = "3.23.0"
 string-truncate = "0.1.0"
 tokio = { version = "1.53.1", features = ["full"] }
+tracing = { version = "0.1.44", features = ["async-await"] }
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 twilight-model = "0.17.1"
 twilight-util = { version = "0.17.0", features = ["builder"] }
 url = { version = "2.5.8", features = ["serde"] }
