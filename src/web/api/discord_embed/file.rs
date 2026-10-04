@@ -1,3 +1,4 @@
+use std::error::Error;
 use crate::analytics::CaptureEventProperties;
 use crate::curseforge;
 use crate::curseforge::mods::SocialLinkType;
@@ -8,7 +9,6 @@ use crate::web::api::discord_embed::EmbedParams;
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::{Extension, Json};
-use axum_test::expect_json::__private::serde_trampoline::de::StdError;
 use human_repr::HumanCount;
 use posthog_rs::{CaptureExceptionOptions, Event};
 use std::sync::Arc;
@@ -49,7 +49,7 @@ pub(crate) async fn file_embed_by_id(
                     let real_error = err.into_boxed_dyn_error();
                     state
                         .posthog_client
-                        .capture_exception_with::<dyn StdError + Send + Sync>(
+                        .capture_exception_with::<dyn Error + Send + Sync>(
                             real_error.as_ref(),
                             CaptureExceptionOptions::new().distinct_id(event.distinct_id()),
                         )
