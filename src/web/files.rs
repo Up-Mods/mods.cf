@@ -9,6 +9,7 @@ use posthog_rs::{CaptureExceptionOptions, EvaluateFlagsOptions, Event, FlagValue
 use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
+use tracing::{debug, error};
 
 const FILES_PREVIEW_HTML: &str = include_str!("previews/file.html");
 
@@ -59,7 +60,7 @@ pub(crate) async fn file_by_id(
                             )
                             .await
                             .ok();
-                        log::error!("Unable to query feature flags! {err:#}");
+                        error!("Unable to query feature flags! {err:#}");
                     }
                     Ok(snapshot) => {
                         event.with_flags(&snapshot);
@@ -68,7 +69,7 @@ pub(crate) async fn file_by_id(
                             snapshot.get_flag(feature_flags::DISCORD_EMBEDS)
                             && embeds_flag
                         {
-                            log::debug!(
+                            debug!(
                                 "Sending discord preview for Project {project_id} ({project_name}), file {file_id}",
                                 project_id = project.id,
                                 project_name = project.name
@@ -134,7 +135,7 @@ pub(crate) async fn file_by_id(
             Redirect::to(&redirect_url).into_response()
         }
         Err(err) => {
-            log::error!("Error during file lookup for file {file_id}: {err:#}");
+            error!("Error during file lookup for file {file_id}: {err:#}");
             StatusCode::INTERNAL_SERVER_ERROR.into_response()
         }
     }

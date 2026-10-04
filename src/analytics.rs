@@ -10,6 +10,7 @@ use rootcause::prelude::*;
 use serde::Serialize;
 use std::env;
 use std::sync::Arc;
+use tracing::{debug, error, info};
 
 pub(crate) async fn init(enable: bool) -> rootcause::Result<Client> {
     let mut builder = ClientOptionsBuilder::default();
@@ -26,7 +27,7 @@ pub(crate) async fn init(enable: bool) -> rootcause::Result<Client> {
             .api_key(posthog_project_api_key)
             .secret_key(posthog_personal_api_key.unwrap_or_default());
 
-        log::info!("PostHog analytics enabled");
+        info!("PostHog analytics enabled");
     }
 
     let client = posthog_rs::client(builder.build()?).await;
@@ -91,7 +92,7 @@ pub(crate) async fn capture_analytics(
         response = next.run(req).await;
     }
 
-    log::debug!(
+    debug!(
         "{method} ({status:03}) - {path}{user_agent}",
         status = response.status().as_str(),
         user_agent = user_agent.map(|s| format!(" ({s})")).unwrap_or_default()
@@ -104,7 +105,7 @@ pub(crate) async fn capture_analytics(
 impl Event {
     fn with<K: Into<String>, V: Serialize>(&mut self, key: K, value: V) -> &mut Self {
         if let Err(err) = self.insert_prop(key, value) {
-            log::error!("Unable to set event error context: {err:#}");
+            error!("Unable to set event error context: {err:#}");
         }
 
         self

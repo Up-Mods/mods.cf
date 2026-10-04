@@ -13,6 +13,7 @@ use posthog_rs::{CaptureExceptionOptions, Event};
 use rootcause::compat::boxed_error::IntoBoxedError;
 use std::error::Error;
 use std::sync::Arc;
+use tracing::error;
 use twilight_model::channel::message::EmojiReactionType;
 use twilight_model::channel::message::component::{ButtonStyle, UnfurledMediaItem};
 use twilight_model::id::Id;
@@ -45,7 +46,7 @@ pub(crate) async fn file_embed_by_id(
                 .await
             {
                 Err(err) => {
-                    log::error!("Unable to get file changelog for {file_id}! {err:#}");
+                    error!("Unable to get file changelog for {file_id}! {err:#}");
 
                     let real_error = err.into_boxed_error();
                     state
@@ -162,7 +163,7 @@ pub(crate) async fn file_embed_by_id(
             Json(ComponentHolder::new(root)).into_response()
         }
         Err(err) => {
-            log::error!("Error during project lookup for {file_id}: {err:#}");
+            error!("Error during project lookup for {file_id}: {err:#}");
             ApiError::server_error(Some(format!("Error during project lookup for {file_id}")))
                 .into_response()
         }

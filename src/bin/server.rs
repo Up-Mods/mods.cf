@@ -3,7 +3,7 @@ use rootcause::prelude::*;
 use std::net::{IpAddr, Ipv6Addr, SocketAddr};
 use tokio::net::TcpListener;
 use tokio::signal;
-use tracing::Level;
+use tracing::{Level, info};
 
 const PORT: u16 = 3000;
 
@@ -23,7 +23,7 @@ async fn main() -> rootcause::Result<()> {
         .await
         .context_with(|| format!("Unable to create listener on port {PORT}"))?;
 
-    log::info!("Listening on http://localhost:{PORT}");
+    info!("Listening on http://localhost:{PORT}");
     axum::serve(listener, app)
         .with_graceful_shutdown(wait_for_shutdown_signal())
         .await?;
@@ -52,10 +52,10 @@ async fn wait_for_shutdown_signal() {
     tokio::select! {
         biased;
         _ = ctrl_c => {
-            log::info!("Received Ctrl+C, initiating shutdown");
+            info!("Received Ctrl+C, initiating shutdown");
         }
         _ = terminate => {
-            log::info!("Received SIGTERM, initiating shutdown");
+            info!("Received SIGTERM, initiating shutdown");
         }
     }
 }

@@ -9,6 +9,7 @@ use posthog_rs::{CaptureExceptionOptions, EvaluateFlagsOptions, Event, FlagValue
 use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
+use tracing::{debug, error};
 
 const PROJECTS_PREVIEW_HTML: &str = include_str!("previews/project.html");
 
@@ -53,7 +54,7 @@ pub(crate) async fn project_by_id(
                             )
                             .await
                             .ok();
-                        log::error!("Unable to query feature flags! {err:#}");
+                        error!("Unable to query feature flags! {err:#}");
                     }
                     Ok(snapshot) => {
                         event.with_flags(&snapshot);
@@ -62,7 +63,7 @@ pub(crate) async fn project_by_id(
                             snapshot.get_flag(feature_flags::DISCORD_EMBEDS)
                             && embeds_flag
                         {
-                            log::debug!(
+                            debug!(
                                 "Sending discord preview for Project {project_id} ({project_name})",
                                 project_name = project.name
                             );
@@ -115,7 +116,7 @@ pub(crate) async fn project_by_id(
             Redirect::to(&project.links.website_url).into_response()
         }
         Err(err) => {
-            log::error!("Error during project lookup for {project_id}: {err:#}");
+            error!("Error during project lookup for {project_id}: {err:#}");
             StatusCode::INTERNAL_SERVER_ERROR.into_response()
         }
     }
