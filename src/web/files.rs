@@ -43,6 +43,10 @@ pub(crate) async fn file_by_id(
                 );
                 props.insert("cf_file_id".to_string(), Value::String(file_id.to_string()));
 
+                if let Some(current_url) = event.properties().get("$current_url") {
+                    props.insert("$current_url".to_string(), current_url.clone());
+                }
+
                 match state
                     .posthog_client
                     .evaluate_flags(

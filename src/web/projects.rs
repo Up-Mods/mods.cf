@@ -37,6 +37,10 @@ pub(crate) async fn project_by_id(
                     Value::String(project_id.to_string()),
                 );
 
+                if let Some(current_url) = event.properties().get("$current_url") {
+                    props.insert("$current_url".to_string(), current_url.clone());
+                }
+
                 match state
                     .posthog_client
                     .evaluate_flags(
