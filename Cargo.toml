@@ -27,3 +27,7 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 twilight-model = "0.17.1"
 twilight-util = { version = "0.17.0", features = ["builder"] }
 url = { version = "2.5.8", features = ["serde"] }
+
+[patch.crates-io]
+twilight-model = { git = "https://github.com/twilight-rs/twilight", rev = "fe33d626ece04de917ebe7e5a4bd19f5a9f32e04", package = "twilight-model" }
+twilight-util = { git = "https://github.com/twilight-rs/twilight", rev = "fe33d626ece04de917ebe7e5a4bd19f5a9f32e04", package = "twilight-util" }
