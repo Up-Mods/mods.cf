@@ -10,7 +10,7 @@ embed:
     file: |
       # %{file_release_type_emoji} %{file_name} - CurseForge
       -# *%{file_downloads} downloads*
-      ---
+      
       ### Changelog:
       %{file_changelog}
     file_changelog:
