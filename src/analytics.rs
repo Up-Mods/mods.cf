@@ -1,8 +1,8 @@
 use crate::util::web::StatusExt;
 use crate::web::{AppState, UserAgent};
 use axum::extract::{Request, State};
-use axum::http::StatusCode;
 use axum::http::header::USER_AGENT;
+use axum::http::{HeaderName, StatusCode};
 use axum::middleware::Next;
 use axum::response::Response;
 use posthog_rs::{Client, ClientOptionsBuilder, Event};
@@ -10,6 +10,7 @@ use rootcause::prelude::*;
 use serde::Serialize;
 use std::env;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tracing::{debug, error, info};
 
 pub(crate) async fn init(enable: bool) -> rootcause::Result<Client> {
@@ -71,23 +72,36 @@ pub(crate) async fn capture_analytics(
         && let Some(full_url) = full_url
     {
         let hostname = full_url.host_str().unwrap_or_default().to_string();
-        let mut event = Event::new_anon("$pageview");
-        event
-            .with("$current_url", full_url.as_str())
+        let event = Arc::new(Mutex::new(Event::new_anon("$pageview")));
+        let mut evt = event.lock().await;
+        evt.with("$current_url", full_url.as_str())
             .with("$host", &hostname)
             .with("$pathname", path.path())
-            .with("user_agent", user_agent.as_deref().unwrap_or_default());
+            .with("$raw_user_agent", user_agent.as_deref().unwrap_or_default());
+        drop(evt);
 
-        req.extensions_mut().insert(event);
+        req.extensions_mut().insert(event.clone());
 
         response = next.run(req).await;
 
-        if let Some(mut event) = response.extensions().get::<Event>().cloned() {
-            event
-                .with("status", response.status().as_u16())
-                .with("success", response.status().is_success_or_redirect());
-            state.posthog_client.capture(event);
+        let mut final_event = event.lock().await;
+        final_event
+            .with("status", response.status().as_u16())
+            .with("success", response.status().is_success_or_redirect());
+
+        const REDIRECT_HEADER: HeaderName = HeaderName::from_static("location");
+        if response.status().is_redirection()
+            && let Some(header) = response.headers().get(REDIRECT_HEADER)
+        {
+            let header_value = header
+                .to_str()
+                .ok()
+                .map(ToString::to_string)
+                .unwrap_or_else(|| String::from_utf8_lossy(header.as_bytes()).to_string());
+            final_event.with("redirect_target", header_value);
         }
+
+        state.posthog_client.capture(final_event.clone());
     } else {
         response = next.run(req).await;
     }

@@ -6,9 +6,11 @@ use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Redirect};
 use chrono::Utc;
 use posthog_rs::{CaptureExceptionOptions, EvaluateFlagsOptions, Event, FlagValue};
+use rootcause::compat::boxed_error::IntoBoxedError;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tracing::{debug, error};
 
 const FILES_PREVIEW_HTML: &str = include_str!("previews/file.html");
@@ -16,10 +18,12 @@ const FILES_PREVIEW_HTML: &str = include_str!("previews/file.html");
 pub(crate) async fn file_by_id(
     State(state): State<Arc<AppState>>,
     Extension(user_agent): Extension<Option<UserAgent>>,
-    Extension(mut event): Extension<Event>,
+    Extension(event): Extension<Arc<Mutex<Event>>>,
     Path(file_id): Path<u64>,
     req: Request,
 ) -> impl IntoResponse {
+    let mut event = event.lock().await;
+
     match curseforge::mods::get_file_info(&state.curseforge.eternal_api_client, file_id).await {
         Ok(result) => {
             let Some((project, file)) = result else {
@@ -136,6 +140,14 @@ pub(crate) async fn file_by_id(
         }
         Err(err) => {
             error!("Error during file lookup for file {file_id}: {err:#}");
+            state
+                .posthog_client
+                .capture_exception_with(
+                    err.into_boxed_error().as_ref(),
+                    CaptureExceptionOptions::new().distinct_id(event.distinct_id()),
+                )
+                .await
+                .ok();
             StatusCode::INTERNAL_SERVER_ERROR.into_response()
         }
     }

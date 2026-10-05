@@ -6,9 +6,11 @@ use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Redirect};
 use chrono::Utc;
 use posthog_rs::{CaptureExceptionOptions, EvaluateFlagsOptions, Event, FlagValue};
+use rootcause::compat::boxed_error::IntoBoxedError;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tracing::{debug, error};
 
 const PROJECTS_PREVIEW_HTML: &str = include_str!("previews/project.html");
@@ -16,10 +18,12 @@ const PROJECTS_PREVIEW_HTML: &str = include_str!("previews/project.html");
 pub(crate) async fn project_by_id(
     State(state): State<Arc<AppState>>,
     Extension(user_agent): Extension<Option<UserAgent>>,
-    Extension(mut event): Extension<Event>,
+    Extension(event): Extension<Arc<Mutex<Event>>>,
     Path(project_id): Path<u64>,
     req: Request,
 ) -> impl IntoResponse {
+    let mut event = event.lock().await;
+
     match curseforge::mods::get_mod(&state.curseforge.eternal_api_client, project_id).await {
         Ok(result) => {
             let Some(project) = result else {
@@ -117,6 +121,14 @@ pub(crate) async fn project_by_id(
         }
         Err(err) => {
             error!("Error during project lookup for {project_id}: {err:#}");
+            state
+                .posthog_client
+                .capture_exception_with(
+                    err.into_boxed_error().as_ref(),
+                    CaptureExceptionOptions::new().distinct_id(event.distinct_id()),
+                )
+                .await
+                .ok();
             StatusCode::INTERNAL_SERVER_ERROR.into_response()
         }
     }

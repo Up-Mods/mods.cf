@@ -9,8 +9,10 @@ use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::{Extension, Json};
 use human_repr::HumanCount;
-use posthog_rs::Event;
+use posthog_rs::{CaptureExceptionOptions, Event};
+use rootcause::compat::boxed_error::IntoBoxedError;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tracing::error;
 use twilight_model::channel::message::EmojiReactionType;
 use twilight_model::channel::message::component::{ButtonStyle, UnfurledMediaItem};
@@ -22,10 +24,12 @@ use twilight_util::builder::message::{
 
 pub(crate) async fn project_embed_by_id(
     State(state): State<Arc<AppState>>,
-    Extension(mut event): Extension<Event>,
+    Extension(event): Extension<Arc<Mutex<Event>>>,
     Path(project_id): Path<u64>,
     Query(params): Query<EmbedParams>,
 ) -> impl IntoResponse {
+    let mut event = event.lock().await;
+
     match curseforge::mods::get_mod(&state.curseforge.eternal_api_client, project_id).await {
         Ok(result) => {
             let Some(project) = result else {
@@ -127,6 +131,14 @@ pub(crate) async fn project_embed_by_id(
         }
         Err(err) => {
             error!("Error during project lookup for {project_id}: {err:#}");
+            state
+                .posthog_client
+                .capture_exception_with(
+                    err.into_boxed_error().as_ref(),
+                    CaptureExceptionOptions::new().distinct_id(event.distinct_id()),
+                )
+                .await
+                .ok();
             ApiError::server_error(Some(format!(
                 "Error during project lookup for {project_id}"
             )))
