@@ -3307,7 +3307,7 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 [[package]]
 name = "twilight-model"
 version = "0.17.1"
-source = "git+https://github.com/twilight-rs/twilight?rev=fe33d626ece04de917ebe7e5a4bd19f5a9f32e04#fe33d626ece04de917ebe7e5a4bd19f5a9f32e04"
+source = "git+https://github.com/twilight-rs/twilight?rev=a80291436d642ffb6170415762099065dd9b084d#a80291436d642ffb6170415762099065dd9b084d"
 dependencies = [
  "bitflags 2.13.2",
  "serde",
@@ -3319,7 +3319,7 @@ dependencies = [
 [[package]]
 name = "twilight-util"
 version = "0.17.0"
-source = "git+https://github.com/twilight-rs/twilight?rev=fe33d626ece04de917ebe7e5a4bd19f5a9f32e04#fe33d626ece04de917ebe7e5a4bd19f5a9f32e04"
+source = "git+https://github.com/twilight-rs/twilight?rev=a80291436d642ffb6170415762099065dd9b084d#a80291436d642ffb6170415762099065dd9b084d"
 dependencies = [
  "twilight-model",
  "twilight-validate",
@@ -3328,7 +3328,7 @@ dependencies = [
 [[package]]
 name = "twilight-validate"
 version = "0.17.0"
-source = "git+https://github.com/twilight-rs/twilight?rev=fe33d626ece04de917ebe7e5a4bd19f5a9f32e04#fe33d626ece04de917ebe7e5a4bd19f5a9f32e04"
+source = "git+https://github.com/twilight-rs/twilight?rev=a80291436d642ffb6170415762099065dd9b084d#a80291436d642ffb6170415762099065dd9b084d"
 dependencies = [
  "twilight-model",
 ]

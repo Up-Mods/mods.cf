@@ -30,5 +30,5 @@ twilight-util = { version = "0.17.0", features = ["builder"] }
 url = { version = "2.5.8", features = ["serde"] }
 
 [patch.crates-io]
-twilight-model = { git = "https://github.com/twilight-rs/twilight", rev = "fe33d626ece04de917ebe7e5a4bd19f5a9f32e04", package = "twilight-model" }
-twilight-util = { git = "https://github.com/twilight-rs/twilight", rev = "fe33d626ece04de917ebe7e5a4bd19f5a9f32e04", package = "twilight-util" }
+twilight-model = { git = "https://github.com/twilight-rs/twilight", rev = "a80291436d642ffb6170415762099065dd9b084d", package = "twilight-model" }
+twilight-util = { git = "https://github.com/twilight-rs/twilight", rev = "a80291436d642ffb6170415762099065dd9b084d", package = "twilight-util" }
