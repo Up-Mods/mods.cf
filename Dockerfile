@@ -1,7 +1,7 @@
 # escape=\
 # syntax=docker/dockerfile:1
 
-ARG RUST_VERSION=1.90.0
+ARG RUST_VERSION=1.99.1
 ARG ALPINE_VERSION
 
 ################################################################################
