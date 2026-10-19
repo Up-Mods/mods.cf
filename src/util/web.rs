@@ -2,7 +2,6 @@ use crate::web::UserAgent;
 use axum::http::StatusCode;
 use bytes::Bytes;
 use rootcause::prelude::*;
-use serde::Serializer;
 use serde::de::DeserializeOwned;
 
 #[extension(pub(crate) trait BetterJsonError)]

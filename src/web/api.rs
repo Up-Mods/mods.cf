@@ -3,8 +3,8 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::{Json, Router};
 use serde::Serialize;
-use std::sync::Arc;
 use serde_with::skip_serializing_none;
+use std::sync::Arc;
 
 pub(crate) mod discord_embed;
 

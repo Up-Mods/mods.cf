@@ -10,7 +10,7 @@ use rootcause::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_map_to_array::{HashMapToArray, KeyValueLabels};
 use serde_repr::Deserialize_repr;
-use serde_with::{NoneAsEmptyString, serde_as, skip_serializing_none};
+use serde_with::{serde_as, skip_serializing_none};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
