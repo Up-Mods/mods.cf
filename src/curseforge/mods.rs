@@ -222,6 +222,11 @@ pub struct ModAuthor {
     pub avatar_url: Option<String>,
 }
 
+#[skip_serializing_none]
+#[serde_as]
+#[serde_with::apply(
+    Option<String> => #[serde_as(as = "NoneAsEmptyString")]
+)]
 #[derive(Serialize, Deserialize)]
 pub struct ModAsset {
     pub id: u64,
