@@ -71,6 +71,8 @@ pub struct Mod {
     pub is_available: bool,
     #[serde(default = "crate::util::serialization::default_true")]
     pub has_comments_enabled: bool,
+    #[serde(rename = "licenseType")]
+    pub license_type: Option<String>,
     #[serde(rename = "thumbsUpCount")]
     pub thumbs_up_count: Option<u64>,
     pub rating: Option<f64>,
