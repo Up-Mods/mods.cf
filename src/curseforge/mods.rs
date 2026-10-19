@@ -80,18 +80,18 @@ pub struct Mod {
 }
 
 #[serde_as]
+#[serde_with::apply(
+    Option<String> => #[serde_as(as = "NoneAsEmptyString")]
+)]
 #[derive(Serialize, Deserialize)]
 pub struct ModLinks {
     #[serde(rename = "websiteUrl")]
     pub website_url: String,
     #[serde(rename = "wikiUrl")]
-    #[serde_as(as = "NoneAsEmptyString")]
     pub wiki_url: Option<String>,
     #[serde(rename = "issuesUrl")]
-    #[serde_as(as = "NoneAsEmptyString")]
     pub issues_url: Option<String>,
     #[serde(rename = "sourceUrl")]
-    #[serde_as(as = "NoneAsEmptyString")]
     pub sources_url: Option<String>,
 }
 
