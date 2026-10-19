@@ -16,9 +16,9 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use string_truncate::Truncate;
 
-#[serde_as]
-#[derive(Serialize, Deserialize)]
 #[skip_serializing_none]
+#[serde_as]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Mod {
     pub id: u64,
     #[serde(rename = "gameId")]
@@ -80,21 +80,22 @@ pub struct Mod {
 }
 
 #[serde_as]
-#[serde_with::apply(
-    Option<String> => #[serde_as(as = "NoneAsEmptyString")]
-)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModLinks {
     #[serde(rename = "websiteUrl")]
     pub website_url: String,
+    #[serde_as(deserialize_as = "serde_with::NoneAsEmptyString")]
     #[serde(rename = "wikiUrl")]
     pub wiki_url: Option<String>,
+    #[serde_as(deserialize_as = "serde_with::NoneAsEmptyString")]
     #[serde(rename = "issuesUrl")]
     pub issues_url: Option<String>,
+    #[serde_as(deserialize_as = "serde_with::NoneAsEmptyString")]
     #[serde(rename = "sourceUrl")]
     pub sources_url: Option<String>,
 }
 
+#[derive(Debug, Clone, Copy)]
 struct SocialLinkTypeKeyValueLabels;
 
 impl KeyValueLabels for SocialLinkTypeKeyValueLabels {
@@ -103,7 +104,7 @@ impl KeyValueLabels for SocialLinkTypeKeyValueLabels {
 }
 
 // FIXME find a better way to serialize than this jank
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct SocialLinks(
     #[serde(with = "HashMapToArray::<SocialLinkType, String, SocialLinkTypeKeyValueLabels>")]
@@ -116,7 +117,7 @@ impl From<SocialLinks> for HashMap<SocialLinkType, String> {
     }
 }
 
-#[derive(Serialize, Deserialize, Hash, Eq, PartialEq, Copy, Clone)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(from = "u8")]
 pub enum SocialLinkType {
     #[serde(rename = "mastodon")]
@@ -188,7 +189,7 @@ impl From<u8> for SocialLinkType {
     }
 }
 
-#[derive(Serialize, Deserialize_repr)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize_repr)]
 #[repr(u8)]
 pub enum ModStatus {
     #[serde(rename = "new")]
@@ -213,7 +214,7 @@ pub enum ModStatus {
     UnderReview = 10,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModAuthor {
     pub id: u64,
     pub name: String,
@@ -224,22 +225,22 @@ pub struct ModAuthor {
 
 #[skip_serializing_none]
 #[serde_as]
-#[serde_with::apply(
-    Option<String> => #[serde_as(as = "NoneAsEmptyString")]
-)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModAsset {
     pub id: u64,
     #[serde(rename = "modId")]
     pub project_id: u64,
+    #[serde_as(deserialize_as = "serde_with::NoneAsEmptyString")]
     pub title: Option<String>,
+    #[serde_as(deserialize_as = "serde_with::NoneAsEmptyString")]
     pub description: Option<String>,
+    #[serde_as(deserialize_as = "serde_with::NoneAsEmptyString")]
     #[serde(rename = "thumbnailUrl")]
     pub thumbnail_url: Option<String>,
     pub url: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct File {
     pub id: u64,
     #[serde(rename = "gameId")]
@@ -316,7 +317,7 @@ impl File {
     }
 }
 
-#[derive(Serialize, Deserialize_repr, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize_repr)]
 #[repr(u8)]
 pub enum FileReleaseType {
     Release = 1,
@@ -356,7 +357,7 @@ impl Display for FileReleaseType {
     }
 }
 
-#[derive(Serialize, Deserialize_repr, Clone)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize_repr)]
 #[repr(u8)]
 pub enum FileStatus {
     #[serde(rename = "processing")]
@@ -407,14 +408,14 @@ pub enum FileStatus {
     PostProcessing = 23,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileHash {
     pub value: String,
     #[serde(rename = "algo")]
     pub algorithm: FileHashAlgorithm,
 }
 
-#[derive(Serialize, Deserialize_repr, Clone)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize_repr)]
 #[repr(u8)]
 pub enum FileHashAlgorithm {
     #[serde(rename = "sha_1")]
@@ -423,7 +424,7 @@ pub enum FileHashAlgorithm {
     MD5 = 2,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileIndex {
     #[serde(rename = "gameVersion")]
     pub game_version: String,
@@ -439,7 +440,7 @@ pub struct FileIndex {
     pub mod_loader: Option<ModLoaderType>,
 }
 
-#[derive(Serialize, Deserialize_repr)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize_repr)]
 #[repr(u8)]
 pub enum ModLoaderType {
     #[serde(rename = "any")]
@@ -458,7 +459,7 @@ pub enum ModLoaderType {
     NeoForge = 6,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Clone, Serialize)]
 struct GetFilesRequest {
     #[serde(rename = "fileIds")]
     file_ids: Vec<u64>,
@@ -468,7 +469,7 @@ type GetModResponse = DataResponse<Mod>;
 type GetFilesResponse = DataResponse<Vec<File>>;
 type GetChangelogResponse = DataResponse<Option<String>>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct DataResponse<T> {
     pub data: T,
 }
