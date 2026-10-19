@@ -39,10 +39,3 @@ impl StatusCode {
         self.is_success() || self.is_redirection()
     }
 }
-
-pub(crate) fn serialize_status_code<S: Serializer>(
-    value: &StatusCode,
-    serializer: S,
-) -> Result<S::Ok, S::Error> {
-    serializer.serialize_u16(value.as_u16())
-}

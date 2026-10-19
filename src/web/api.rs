@@ -1,18 +1,18 @@
-use crate::util::web::serialize_status_code;
 use crate::web::AppState;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::{Json, Router};
 use serde::Serialize;
 use std::sync::Arc;
+use serde_with::skip_serializing_none;
 
 pub(crate) mod discord_embed;
 
+#[skip_serializing_none]
 #[derive(Clone, Serialize)]
 struct ApiError {
-    #[serde(serialize_with = "serialize_status_code")]
+    #[serde(with = "http_serde::status_code")]
     status: StatusCode,
-    #[serde(skip_serializing_if = "Option::is_none")]
     message: Option<String>,
 }
 

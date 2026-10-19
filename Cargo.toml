@@ -9,6 +9,7 @@ bytes = { version = "1.12.1", features = ["serde"] }
 chrono = { version = "0.4.45", features = ["serde"] }
 dotenvy = { git = "https://github.com/allan2/dotenvy", rev = "fa25166994d6978bd2e002f0ed190c0c39674ebe", features = ["macros"] }
 extension-traits = "2.0.3"
+http-serde = "2.1.1"
 human-repr = "1.1.0"
 posthog-rs = { version = "0.27.0", features = ["capture-v1"] }
 reqwest = { version = "0.13.5", features = ["json", "gzip", "brotli", "zstd", "deflate"] }
