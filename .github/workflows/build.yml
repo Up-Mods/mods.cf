@@ -69,7 +69,7 @@ jobs:
           provenance: mode=max
           cache-from: type=gha,scope=docker-build-${{ matrix.platform }}
           cache-to: type=gha,mode=max,scope=docker-build-${{ matrix.platform }}
-          outputs: type=image,name="${{ env.IMAGE_NAME }}",push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,"name=${{ env.IMAGE_NAME }}",push-by-digest=true,name-canonical=true,push=true
           labels: ${{ steps.meta.outputs.labels }}
           platforms: ${{ matrix.platform }}
           build-args: |
