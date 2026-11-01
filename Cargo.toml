@@ -17,10 +17,10 @@ rootcause = "0.13.0"
 rust-i18n = "4.2.2"
 serde = { version = "1.0.229", features = ["derive"] }
 serde-map-to-array = { version = "3.0.0", features = ["std"] }
-serde_json = "1.0.151"
+serde_json = "1.0.154"
 serde_path_to_error = "0.1.20"
 serde_repr = "0.1.21"
-serde_with = "3.23.0"
+serde_with = "3.24.0"
 string-truncate = "0.1.0"
 tokio = { version = "1.53.1", features = ["full"] }
 tracing = { version = "0.1.44", features = ["async-await"] }
