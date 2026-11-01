@@ -124,10 +124,21 @@ jobs:
           merge-multiple: true
 
       - name: Create manifest list and push
+        id: manifest
         working-directory: ${{ runner.temp }}/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            --metadata-file ${{ runner.temp }}/metadata.json \
             $(printf '${{ env.IMAGE_NAME }}@sha256:%s ' *)
+          echo "digest=$(jq -cr '."containerimage.descriptor".digest' ${{ runner.temp }}/metadata.json)" >> $GITHUB_OUTPUT
+
+      - name: Attest final manifest
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        id: attest
+        with:
+          subject-name: ${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.manifest.outputs.digest }}
+          push-to-registry: true
 
       - name: Inspect image
         run: |
