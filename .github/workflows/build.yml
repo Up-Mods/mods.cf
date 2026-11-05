@@ -8,6 +8,7 @@ on:
   push:
     branches: [ "*" ]
     tags: [ "*" ]
+  workflow_dispatch:
 
 env:
   RUST_VERSION: 1.99.1
