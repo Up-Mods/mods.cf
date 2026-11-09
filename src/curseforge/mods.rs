@@ -31,10 +31,7 @@ pub struct Mod {
     pub status: ModStatus,
     #[serde(rename = "downloadCount")]
     pub download_count: u64,
-    #[serde(
-        rename = "isFeatured",
-        default = "crate::util::serialization::default_true"
-    )]
+    #[serde(rename = "isFeatured", default)]
     pub is_featured: bool,
     #[serde(rename = "primaryCategoryId")]
     pub primary_category_id: u64,
