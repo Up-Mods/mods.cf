@@ -17,9 +17,7 @@ RUN apk add --no-cache \
     lld \
     musl-dev \
     git \
-    curl && \
-curl -LsSf https://download.posthog.com/cli | sh && \
-source $HOME/.posthog/env
+    curl
 
 # Build the application.
 # Leverage a cache mount to /usr/local/cargo/registry/
@@ -39,9 +37,15 @@ RUN --mount=type=bind,source=src,target=src \
     --mount=type=secret,id=posthog_host,env=POSTHOG_CLI_HOST \
     --mount=type=secret,id=posthog_project_id,env=POSTHOG_CLI_PROJECT_ID \
     --mount=type=secret,id=posthog_access_token,env=POSTHOG_CLI_API_KEY \
-cargo build --locked --release && \
-cp ./target/release/server /bin/server && \
-[[ ! -z "$POSTHOG_CLI_PROJECT_ID" ]] && [[ ! -z "$POSTHOG_CLI_API_KEY" ]] && posthog-cli symbol-sets upload --directory target/release --include-source
+<<EOF
+cargo build --locked --release
+cp ./target/release/server /bin/server
+if [ ! -z "$POSTHOG_CLI_PROJECT_ID" ] && [ ! -z "$POSTHOG_CLI_API_KEY" ]; then
+  curl -LsSf https://download.posthog.com/cli | sh
+  source "$HOME/.posthog/env"
+  posthog-cli symbol-sets upload --directory target/release --include-source
+fi
+EOF
 
 ################################################################################
 # Create a new stage for running the application that contains the minimal
