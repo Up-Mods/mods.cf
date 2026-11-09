@@ -11,11 +11,14 @@ FROM rust:${RUST_VERSION}-alpine${ALPINE_VERSION} AS build
 WORKDIR /app
 
 # Install host build dependencies.
+# curl: for posthog-cli
 RUN apk add --no-cache \
     clang \
     lld \
     musl-dev \
-    git
+    git \
+    curl && \
+curl -LsSf https://download.posthog.com/cli | sh
 
 # Build the application.
 # Leverage a cache mount to /usr/local/cargo/registry/
@@ -32,8 +35,12 @@ RUN --mount=type=bind,source=src,target=src \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
+    --mount=type=secret,id=posthog_host,env=POSTHOG_CLI_HOST \
+    --mount=type=secret,id=posthog_project_id,env=POSTHOG_CLI_PROJECT_ID \
+    --mount=type=secret,id=posthog_access_token,env=POSTHOG_CLI_API_KEY \
 cargo build --locked --release && \
-cp ./target/release/server /bin/server
+cp ./target/release/server /bin/server && \
+[[ ! -z "$POSTHOG_CLI_PROJECT_ID" ]] && [[ ! -z "$POSTHOG_CLI_API_KEY" ]] && posthog-cli symbol-sets upload --directory target/release --include-source
 
 ################################################################################
 # Create a new stage for running the application that contains the minimal
