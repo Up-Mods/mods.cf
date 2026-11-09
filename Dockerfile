@@ -18,7 +18,8 @@ RUN apk add --no-cache \
     musl-dev \
     git \
     curl && \
-curl -LsSf https://download.posthog.com/cli | sh
+curl -LsSf https://download.posthog.com/cli | sh && \
+source $HOME/.posthog/env
 
 # Build the application.
 # Leverage a cache mount to /usr/local/cargo/registry/
