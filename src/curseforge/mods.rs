@@ -75,7 +75,9 @@ pub struct Mod {
     pub has_comments_enabled: bool,
     #[serde(rename = "licenseType")]
     pub license_type: Option<String>,
-    #[serde(rename = "thumbsUpCount")]
+    #[serde(rename = "favoriteCount", default)]
+    pub favorite_count: u64,
+    #[serde(rename = "thumbsUpCount", default)]
     pub thumbs_up_count: Option<u64>,
     pub rating: Option<f64>,
     // TODO featuredProjectTag
