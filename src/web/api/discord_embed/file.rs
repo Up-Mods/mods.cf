@@ -81,21 +81,27 @@ pub(crate) async fn file_embed_by_id(
                     .unwrap_or_else(|| t!("embed.discord.file_changelog.empty").to_string())
             );
 
-            let thumbnail = ThumbnailBuilder::new(UnfurledMediaItem {
-                url: project.logo.thumbnail_url.unwrap_or(project.logo.url),
-                proxy_url: None,
-                height: None,
-                width: None,
-                content_type: None,
-            })
-            .description(t!(
-                "embed.discord.project_icon_alt",
-                locale = hl,
-                project_name = project.name
-            ))
-            .build();
             let desc = TextDisplayBuilder::new(title_text).build();
-            let main_section = SectionBuilder::new(thumbnail).component(desc).build();
+
+            let main_section = match project.logo {
+                Some(logo) => {
+                    let thumbnail = ThumbnailBuilder::new(UnfurledMediaItem {
+                        url: logo.thumbnail_url.unwrap_or(logo.url),
+                        proxy_url: None,
+                        height: None,
+                        width: None,
+                        content_type: None,
+                    })
+                    .description(t!(
+                        "embed.discord.project_icon_alt",
+                        locale = hl,
+                        project_name = project.name
+                    ))
+                    .build();
+                    SectionBuilder::new(thumbnail).component(desc).build()
+                }
+                None => SectionBuilder::new(desc).build(),
+            };
 
             let file_url = state
                 .http

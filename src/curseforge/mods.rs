@@ -17,6 +17,8 @@ use std::fmt::{Display, Formatter};
 use std::num::NonZeroU64;
 use string_truncate::Truncate;
 
+pub const FALLBACK_LOGO_URL: &str = ""; // TODO fallback logo URL
+
 #[skip_serializing_none]
 #[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -39,7 +41,7 @@ pub struct Mod {
     #[serde(rename = "classId")]
     pub class_id: Option<u64>,
     pub authors: Vec<ModAuthor>,
-    pub logo: ModAsset,
+    pub logo: Option<ModAsset>,
     pub screenshots: Vec<ModAsset>,
     #[serde_as(deserialize_as = "serde_with::NoneAsZero")]
     #[serde(rename = "mainFileId")]

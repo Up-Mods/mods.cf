@@ -1,3 +1,4 @@
+use crate::curseforge::mods::FALLBACK_LOGO_URL;
 use crate::web::{AppState, UserAgent};
 use crate::{curseforge, feature_flags};
 use axum::Extension;
@@ -111,7 +112,10 @@ pub(crate) async fn project_by_id(
                                     .replace("{PROJECT_URL}", &project.links.website_url)
                                     .replace(
                                         "{PROJECT_ICON_URL}",
-                                        &project.logo.thumbnail_url.unwrap_or(project.logo.url),
+                                        &project
+                                            .logo
+                                            .map(|logo| logo.thumbnail_url.unwrap_or(logo.url))
+                                            .unwrap_or_else(|| FALLBACK_LOGO_URL.into()),
                                     )
                                     .replace("{PROJECT_SUMMARY}", &project.summary),
                             )
