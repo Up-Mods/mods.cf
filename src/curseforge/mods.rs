@@ -14,6 +14,7 @@ use serde_with::{serde_as, skip_serializing_none};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+use std::num::NonZeroU64;
 use string_truncate::Truncate;
 
 #[skip_serializing_none]
@@ -43,8 +44,9 @@ pub struct Mod {
     pub authors: Vec<ModAuthor>,
     pub logo: ModAsset,
     pub screenshots: Vec<ModAsset>,
+    #[serde_as(deserialize_as = "serde_with::NoneAsZero")]
     #[serde(rename = "mainFileId")]
-    pub main_file_id: Option<u64>,
+    pub main_file_id: Option<NonZeroU64>,
     #[serde(rename = "latestFiles")]
     pub latest_files: Vec<File>,
     #[serde(rename = "latestFilesIndexes")]
