@@ -28,10 +28,6 @@ string-truncate = "0.1.0"
 tokio = { version = "1.54.1", features = ["full"] }
 tracing = { version = "0.1.44", features = ["async-await"] }
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-twilight-model = "0.17.1"
-twilight-util = { version = "0.17.0", features = ["builder"] }
+twilight-model = "0.18.0"
+twilight-util = { version = "0.18.0", features = ["builder"] }
 url = { version = "2.5.8", features = ["serde"] }
-
-[patch.crates-io]
-twilight-model = { git = "https://github.com/twilight-rs/twilight", rev = "a80291436d642ffb6170415762099065dd9b084d", package = "twilight-model" }
-twilight-util = { git = "https://github.com/twilight-rs/twilight", rev = "a80291436d642ffb6170415762099065dd9b084d", package = "twilight-util" }
